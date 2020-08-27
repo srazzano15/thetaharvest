@@ -32,7 +32,7 @@
               validate-on-blur
               @keyup.enter.native="login"
             ></v-text-field>
-            <v-alert v-if="loginError" dense outlined type="error">Incorrect password. Please try again.</v-alert>
+            <v-alert v-if="loginError" dense outlined type="error">{{ loginError }}</v-alert>
           </v-form>
         </v-card-text>
         <v-card-actions>

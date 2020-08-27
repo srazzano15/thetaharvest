@@ -81,7 +81,7 @@
           <v-col cols="6">
             <v-btn color="green" @click="showTradeForm = true">Add Trade</v-btn>
           </v-col>
-          <v-col cols="6" class="text-end">
+          <v-col cols="6" class="text-right">
             <v-btn color="grey" @click="showGoalsForm = true">Goals</v-btn>
           </v-col>
         </v-card-actions>

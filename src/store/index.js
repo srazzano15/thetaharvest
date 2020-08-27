@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 import * as fb from '../firebase/firebase'
 import router from '../router/index'
 import moment from 'moment'
+// import { isNavigationFailure } from 'vue-router'
 Vue.use(Vuex)
 
 const store = new Vuex.Store({
@@ -11,7 +12,7 @@ const store = new Vuex.Store({
     userProfile: {},
     trades: [],
     loading: true,
-    loginError: false
+    loginError: ''
   },
   mutations: {
     navDrawerToggle: state => (state.drawer = !state.drawer),
@@ -22,16 +23,16 @@ const store = new Vuex.Store({
   },
   actions: {
     async login ({ dispatch, commit }, form) {
-      // clear login error on attempted login
-      commit('setLoginError', false)
       // init user auth session in FB
-      try {
-        const { user } = await fb.auth.signInWithEmailAndPassword(form.email, form.password)
-        // fetch user profile and set in state
-        dispatch('fetchUserProfile', user)
-      } catch (err) {
-        commit('setLoginError', true)
-      }
+      const { user } = await fb.auth.signInWithEmailAndPassword(form.email, form.password).catch(function (err) {
+        commit('setLoginError', err.message)
+        console.log(err)
+      })
+
+      // if (user && Object.keys(user).length > -1) {
+      // fetch user profile and set in state
+      dispatch('fetchUserProfile', user)
+      // }
     },
     async fetchUserProfile ({ commit }, user) {
       // fetch user profile
@@ -49,11 +50,15 @@ const store = new Vuex.Store({
         })
         commit('setTrades', t)
       })
-      commit('finishedLoading')
+      // if (fb.auth.currentUser) {
       if (router.currentRoute.name === 'Home' || router.currentRoute.name === 'login' || router.currentRoute.name === 'register') {
         // change route to dashboard
-        router.push('dashboard')
+        router.push({ name: 'dashboard' }).catch(failure => {
+          console.log('error in vuex')
+        })
       }
+      commit('finishedLoading')
+      // }
     },
     async register ({ dispatch }, form) {
       // sign user up in FB

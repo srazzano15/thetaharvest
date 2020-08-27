@@ -152,9 +152,11 @@ export default {
   },
   created () {
     if (this.fields.type) {
+      this.fields.legs = []
       this.initializeLegs(this.fields.type)
     }
     this.$on('type-changed', () => {
+      this.fields.legs = []
       this.initializeLegs(this.fields.type)
     })
   },
@@ -214,7 +216,7 @@ export default {
         leg: '',
         strike: ''
       }
-
+      this.helpText = ''
       this.$parent.$emit('close-trade-form')
     },
     setLegValue (s) {
@@ -255,15 +257,7 @@ export default {
         type: t,
         strike: ''
       }
-      // console.log(o)
-      if (this.fields.legs[0].action === '') {
-        return (this.fields.legs[0] = o)
-      } else if (this.fields.legs[0].action.length > 0) {
-        this.fields.legs = []
-        return this.fields.legs.push(o)
-      } else {
-        return this.fields.legs.push(o)
-      }
+      return this.fields.legs.push(o)
     },
     initializeLegs (type) {
       // catch this via an event and use it to populate the legs of a trade

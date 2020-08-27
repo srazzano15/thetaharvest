@@ -51,7 +51,7 @@ export default {
 
       setTimeout(() => {
         this.$parent.$emit('close-goal-form')
-      }, 2000)
+      }, 1000)
     },
     closeGoalForm () {
       this.$parent.$emit('close-goal-form')

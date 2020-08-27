@@ -9,10 +9,10 @@
           <v-container>
             <v-row>
               <v-col cols="4">
-                <v-text-field color="green" label="Close Price *" v-model="closePrice" required></v-text-field>
+                <v-text-field color="green" label="Close Date *" v-model="closeDate" readonly=""></v-text-field>
               </v-col>
               <v-col cols="4">
-                <v-text-field color="green" label="Close Date *" v-model="closeDate" readonly=""></v-text-field>
+                <v-text-field color="green" label="Close Price *" v-model="closePrice" required></v-text-field>
               </v-col>
               <v-col cols="4">
                 <v-text-field color="green" label="Total Commissions Paid" v-model="commissions"></v-text-field>

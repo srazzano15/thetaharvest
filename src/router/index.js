@@ -13,19 +13,19 @@ const routes = [
   },
   {
     path: '/login',
-    name: 'Login',
+    name: 'login',
     component: () =>
       import(/* webpackChunkName: 'login' */ '../views/Login.vue')
   },
   {
     path: '/register',
-    name: 'Register',
+    name: 'register',
     component: () =>
       import(/* webpackChunkName: 'register' */ '../views/Register.vue')
   },
   {
     path: '/dashboard',
-    name: 'Dashboard',
+    name: 'dashboard',
     component: () =>
       import(/* webpackChunkName: 'dashboard' */ '../views/Dashboard.vue'),
     meta: {
@@ -34,7 +34,7 @@ const routes = [
   },
   {
     path: '/settings',
-    name: 'Settings',
+    name: 'settings',
     component: () =>
       import(/* webpackChunkName: 'settings' */ '../views/Settings.vue'),
     meta: {
@@ -43,7 +43,7 @@ const routes = [
   },
   {
     path: '/reports',
-    name: 'Reports',
+    name: 'reports',
     component: () =>
       import(/* webpackChunkName: 'reports' */ '../views/Reports.vue'),
     meta: {
@@ -59,8 +59,9 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
+  const user = auth.currentUser
   const requiresAuth = to.matched.some(x => x.meta.requiresAuth)
-  if (requiresAuth && !auth.currentUser) {
+  if (requiresAuth && !user) {
     next('/login')
   } else {
     next()

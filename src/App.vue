@@ -19,10 +19,9 @@
       </v-container>
     </v-main>
     <v-footer
-      absolute
     >
       <v-col cols="12" class="text-center font-weight-medium">
-        v0.0 - Made by Steve Razzano - {{ new Date().getFullYear() }}
+        v0.1.0 - Theta Harvest {{ new Date().getFullYear() }}
       </v-col>
     </v-footer>
   </v-app>
@@ -30,7 +29,7 @@
 
 <script>
 import NavDrawer from './components/NavDrawer'
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 export default {
   name: 'App',
 
@@ -43,7 +42,8 @@ export default {
   }),
 
   computed: {
-    ...mapState(['userProfile', 'profit']),
+    ...mapState(['userProfile']),
+    ...mapGetters(['profit']),
     showNav () {
       return Object.keys(this.userProfile).length > 1
     }

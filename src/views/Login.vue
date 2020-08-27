@@ -1,9 +1,9 @@
 <template>
-  <v-row align="center" justify="center">
+  <v-row align="center" justify="center" v-cloak>
     <v-col cols="12" sm="8" md="4">
       <password-reset v-if="showPasswordReset"></password-reset>
-      <v-card v-else class="elevation-6">
-        <v-toolbar color="green lighten-1" dark flat>
+      <v-card v-else-if="showForm" class="elevation-6">
+        <v-toolbar color="green lighten-1" flat>
           <v-toolbar-title>Login form</v-toolbar-title>
           <v-spacer></v-spacer>
         </v-toolbar>
@@ -32,12 +32,14 @@
               validate-on-blur
               @keyup.enter.native="login"
             ></v-text-field>
+            <v-alert v-if="loginError" dense outlined type="error">Incorrect password. Please try again.</v-alert>
           </v-form>
         </v-card-text>
         <v-card-actions>
           <a class="text-caption pl-4" @click="showPasswordReset = !showPasswordReset">Forgot Password</a>
           <v-spacer></v-spacer>
-          <v-btn @click="login" color="green lighten-1" class="white--text">Login</v-btn>
+          <v-btn :to="'register'" color="grey lighten-1">Register</v-btn>
+          <v-btn :disabled="!valid" @click="login" color="green lighten-1" class="ml-4">Login</v-btn>
         </v-card-actions>
       </v-card>
     </v-col>
@@ -46,6 +48,7 @@
 
 <script>
 import PasswordReset from '@/components/PasswordReset'
+import { mapState } from 'vuex'
 export default {
   components: {
     'password-reset': PasswordReset
@@ -64,11 +67,15 @@ export default {
         emailSecurity: v => v.match(/[^a-zA-Z0-9@._-]/g) === null || 'This is not a valid email address',
         passwordSecurity: v => v.match(/[^a-zA-Z0-9]/g) === null || 'Password must only include alpha-numeric characters A-z & 0-9',
         min: v => v.length >= 8 || 'Password must be at least 8 characters long'
-      }
+      },
+      showForm: false
     }
   },
-  mounted () {
-
+  created () {
+    this.showForm = Object.keys(this.userProfile).includes('name') ? this.showForm : !this.showForm
+  },
+  computed: {
+    ...mapState(['userProfile', 'loginError', 'loading'])
   },
   methods: {
     login () {
@@ -82,3 +89,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+[v-cloak] {
+  display: none
+}
+</style>

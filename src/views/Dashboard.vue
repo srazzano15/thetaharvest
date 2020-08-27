@@ -17,7 +17,7 @@
                     Loading...
                   </div>
                   <div v-else class="grey--text text--darken-3 text-h2 pt-4">
-                    {{ trades.length }}
+                    {{ userTrades.length }}
                   </div>
                 </v-card>
               </v-col>
@@ -105,17 +105,29 @@
         </v-toolbar>
         <v-data-table
           :headers="headers"
-          :items="trades"
+          :items="userTrades"
           :search="tradeSearch"
+          :sort-by="['entryDate']"
+          :sort-desc="['true']"
         >
-          <template v-slot:item.profit="{ item }">
+          <template v-slot:[`item.legs`]="{ item }">
+            <v-chip
+              label
+              small
+              v-for="(leg, i) in item.legs"
+              :key="i"
+              class="mr-1 pa-1"
+            >{{ `${leg.action} ${leg.strike} ${leg.type}` }}</v-chip>
+          </template>
+
+          <template v-slot:[`item.profit`]="{ item }">
             <v-chip
               label
               :color="getColor(item.profit)"
-            >{{ item.profit }}</v-chip>
+            >{{ item.profit ? `$${item.profit}` : ''}}</v-chip>
           </template>
 
-          <template v-slot:item.actions="{ item }">
+          <template v-slot:[`item.actions`]="{ item }">
             <v-btn
               class="mr-2"
               v-if="!item.closed"
@@ -179,21 +191,13 @@ export default {
     return {
       headers: [
         {
-          text: 'Created',
-          align: 'start',
-          value: 'created'
-        },
-        {
           text: 'Entry Date',
-          value: 'entryDate'
+          value: 'entryDate',
+          align: 'start'
         },
         {
           text: 'Exp Date',
           value: 'expirationDate'
-        },
-        {
-          text: 'Qty',
-          value: 'quantity'
         },
         {
           text: 'Ticker',
@@ -201,8 +205,8 @@ export default {
         },
         {
           text: 'Strike(s)',
-          value: 'strikeDisplay',
-          width: '10%',
+          value: 'legs',
+          width: '15%',
           align: 'middle'
         },
         {
@@ -261,8 +265,8 @@ export default {
     })
   },
   computed: {
-    ...mapState(['userProfile', 'trades', 'profit', 'winTotal', 'lossTotal', 'ratioPercentage', 'loading']),
-    ...mapGetters(['monthlyTotal', 'annualTotal', 'monthlyPercent', 'annualPercent'])
+    ...mapState(['userProfile', 'trades', 'loading']),
+    ...mapGetters(['monthlyTotal', 'annualTotal', 'monthlyPercent', 'annualPercent', 'userTrades', 'profit', 'winTotal', 'lossTotal', 'ratioPercentage'])
   },
   methods: {
     getColor (n) {

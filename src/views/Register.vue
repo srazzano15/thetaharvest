@@ -66,6 +66,7 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 export default {
   data () {
     return {
@@ -85,6 +86,12 @@ export default {
         min: v => v.length >= 8 || 'Password must be at least 8 characters long',
         match: v => v === this.field.password || 'Passwords do not match'
       }
+    }
+  },
+  computed: {
+    ...mapState(['userProfile']),
+    hasAuth () {
+      return Object.keys(this.userProfile).length < 0
     }
   },
   methods: {

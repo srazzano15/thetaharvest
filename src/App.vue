@@ -12,7 +12,7 @@
       <v-spacer></v-spacer>
       <v-app-bar-nav-icon v-if="showNav" @click="openDrawer"></v-app-bar-nav-icon>
     </v-app-bar>
-    <nav-drawer :profit="profit" :userName="userProfile.name"></nav-drawer>
+    <nav-drawer v-if="showNav" :profit="profit" :userName="userProfile.name"></nav-drawer>
     <v-main>
       <v-container>
         <router-view></router-view>
@@ -21,7 +21,7 @@
     <v-footer
     >
       <v-col cols="12" class="text-center font-weight-medium">
-        v0.1.1 - Theta Harvest {{ new Date().getFullYear() }}
+        v0.1.2 - Theta Harvest {{ new Date().getFullYear() }}
       </v-col>
     </v-footer>
   </v-app>

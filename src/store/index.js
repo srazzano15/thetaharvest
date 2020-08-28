@@ -6,6 +6,17 @@ import moment from 'moment'
 // import { isNavigationFailure } from 'vue-router'
 Vue.use(Vuex)
 
+// get this is real time
+fb.tradesCollection.orderBy('created', 'desc').onSnapshot(snapshot => {
+  const t = []
+  snapshot.forEach(doc => {
+    const trade = doc.data()
+    trade.id = doc.id
+    t.push(trade)
+  })
+  store.commit('setTrades', t)
+})
+
 const store = new Vuex.Store({
   state: {
     drawer: false,
@@ -22,17 +33,11 @@ const store = new Vuex.Store({
     setLoginError: (state, val) => (state.loginError = val)
   },
   actions: {
-    async login ({ dispatch, commit }, form) {
+    async login ({ dispatch }, form) {
       // init user auth session in FB
-      const { user } = await fb.auth.signInWithEmailAndPassword(form.email, form.password).catch(function (err) {
-        commit('setLoginError', err.message)
-        console.log(err)
-      })
-
-      // if (user && Object.keys(user).length > -1) {
+      const { user } = await fb.auth.signInWithEmailAndPassword(form.email, form.password)
       // fetch user profile and set in state
       dispatch('fetchUserProfile', user)
-      // }
     },
     async fetchUserProfile ({ commit }, user) {
       // fetch user profile
@@ -41,24 +46,11 @@ const store = new Vuex.Store({
       // set user profile in state
       commit('setUserProfile', userProfile.data())
 
-      fb.tradesCollection.orderBy('created', 'desc').onSnapshot(snapshot => {
-        const t = []
-        snapshot.forEach(doc => {
-          const trade = doc.data()
-          trade.id = doc.id
-          t.push(trade)
-        })
-        commit('setTrades', t)
-      })
-      // if (fb.auth.currentUser) {
       if (router.currentRoute.name === 'Home' || router.currentRoute.name === 'login' || router.currentRoute.name === 'register') {
         // change route to dashboard
-        router.push({ name: 'dashboard' }).catch(failure => {
-          console.log('error in vuex')
-        })
+        router.push({ name: 'dashboard' })
       }
       commit('finishedLoading')
-      // }
     },
     async register ({ dispatch }, form) {
       // sign user up in FB
@@ -91,7 +83,6 @@ const store = new Vuex.Store({
         entryDate: trade.entryDate,
         expirationDate: trade.expirationDate,
         quantity: trade.quantity,
-        strikeDisplay: trade.strikeDisplay,
         entryPrice: trade.entryPrice,
         legs: trade.legs,
         userId: fb.auth.currentUser.uid,
@@ -112,7 +103,7 @@ const store = new Vuex.Store({
     },
     async closeTrade ({ state, commit }, trade) {
       const t = state.trades[trade.index]
-      const profit = Math.round(t.quantity * (t.entryPrice - trade.closePrice) * 100) - trade.commissions
+      const profit = t.type.includes('Long') ? Math.round(t.quantity * (trade.closePrice - t.entryPrice) * 100) - trade.commissions : Math.round(t.quantity * (t.entryPrice - trade.closePrice) * 100) - trade.commissions
       await fb.tradesCollection.doc(t.id).update({
         closeDate: trade.closeDate,
         closePrice: trade.closePrice,
@@ -165,7 +156,7 @@ const store = new Vuex.Store({
   },
   getters: {
     drawer: state => state.drawer,
-    monthlyTotal: getters => {
+    monthlyTotal: (state, getters) => {
       const today = new Date()
       let total = 0
       let array = []
@@ -179,7 +170,7 @@ const store = new Vuex.Store({
       })
       return total
     },
-    annualTotal: getters => {
+    annualTotal: (state, getters) => {
       const today = new Date()
       let total = 0
       let array = []
@@ -215,9 +206,9 @@ const store = new Vuex.Store({
         return trade.userId === userId
       })
     },
-    profit: getters => {
+    profit: (state, getters) => {
       let p = 0
-      if (getters.userTrades) {
+      if (getters.userTrades && getters.userTrades.length) {
         getters.userTrades.forEach(trade => {
           if (trade.profit) {
             p += trade.profit
@@ -226,7 +217,7 @@ const store = new Vuex.Store({
       }
       return p
     },
-    winTotal: getters => {
+    winTotal: (state, getters) => {
       let w = 0
       if (getters.userTrades) {
         getters.userTrades.forEach(trade => {
@@ -237,7 +228,7 @@ const store = new Vuex.Store({
       }
       return w
     },
-    lossTotal: getters => {
+    lossTotal: (state, getters) => {
       let l = 0
       if (getters.userTrades) {
         getters.userTrades.forEach(trade => {
@@ -248,7 +239,7 @@ const store = new Vuex.Store({
       }
       return l
     },
-    ratioPercentage: getters => {
+    ratioPercentage: (state, getters) => {
       let r = '0%'
       const w = getters.winTotal
       const l = getters.lossTotal

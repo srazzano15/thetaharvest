@@ -11,64 +11,64 @@
         <v-card-text>
           <v-container fluid>
             <v-row>
-              <v-col cols="3">
-                <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-h5"># of Trades
-                  <div v-if="loading" class="grey--text text--darken-3 text-h2 font-weight-thin pt-4">
+              <v-col cols="12" md="2">
+                <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-h6"># of Trades
+                  <div v-if="loading" class="grey--text text--darken-3 text-h3 font-weight-thin pt-4">
                     Loading...
                   </div>
-                  <div v-else class="grey--text text--darken-3 text-h2 pt-4">
+                  <div v-else class="grey--text text--darken-3 text-h3 text-lg-h4 pt-4">
                     {{ userTrades.length }}
                   </div>
                 </v-card>
               </v-col>
-              <v-col cols="3">
-                <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-h5">Profit/Loss:
+              <v-col cols="12" md="4">
+                <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-h6">Profit/Loss:
                   <div v-if="loading" class="grey--text text--darken-3 text-h2 font-weight-thin pt-4">
                     Loading...
                   </div>
-                  <div v-else class="text-h2 pt-4" :class="{ 'green--text': profit > 0, 'red--text': profit < 0 }">
+                  <div v-else class="text-h4 text-lg-h4 pt-4" :class="{ 'green--text': profit > 0, 'red--text': profit < 0 }">
                     {{ 0 > profit ? `- $${profit.toFixed(2)}` :  `+ $${profit.toFixed(2)}`}}
                   </div>
                 </v-card>
               </v-col>
-              <v-col cols="3">
-                <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-h5">Win   Ratio
+              <v-col cols="12" md="3">
+                <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-h6">Win   Ratio
                   <div v-if="loading" class="grey--text text--darken-3 text-h2 font-weight-thin pt-4">
                     Loading...
                   </div>
-                  <div v-else class="grey--text text--darken-3 text-h2 pt-4">
+                  <div v-else class="grey--text text--darken-3 text-h3 text-lg-h4 pt-4">
                     {{ `${winTotal} / ${lossTotal}` }}
                   </div>
                 </v-card>
               </v-col>
-              <v-col cols="3">
-                <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-h5">Win Percentage
+              <v-col cols="12" md="3">
+                <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-h6">Win Percentage
                   <div v-if="loading" class="grey--text text--darken-3 text-h2 font-weight-thin pt-4">
                     Loading...
                   </div>
-                  <div v-else class="grey--text text--darken-3 text-h2 pt-4">
+                  <div v-else class="grey--text text--darken-3 text-h3 text-lg-h4 pt-4">
                     {{ ratioPercentage  }}
                   </div>
                 </v-card>
               </v-col>
             </v-row>
             <v-row>
-              <v-col cols="6">
+              <v-col cols="12" md="6">
                 <v-card color="blue-grey lighten-4" class="text-center px-2 py-6 text-h5 grey--text text--darken-1">Progress To Monthly Goal
                   <div v-if="loading" class="grey--text text--darken-3 text-h3 font-weight-thin pt-4">
                     Loading...
                   </div>
-                  <div v-else class="grey--text text--darken-3 text-h3 pt-4">
+                  <div v-else class="grey--text text--darken-3 text-h3 text-lg-h4 pt-4">
                     {{ `$${monthlyTotal.toFixed(2)} / $${userProfile.monthlyGoal} (${monthlyPercent}%)`}}
                   </div>
                 </v-card>
               </v-col>
-              <v-col cols="6">
+              <v-col cols="12" md="6">
                 <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-h5">Progress to Annual Goal
                   <div v-if="loading" class="grey--text text--darken-3 text-h3 font-weight-thin pt-4">
                     Loading...
                   </div>
-                  <div v-else class="grey--text text--darken-3 text-h3 pt-4">
+                  <div v-else class="grey--text text--darken-3 text-h3 text-lg-h4 pt-4">
                     {{ `$${annualTotal.toFixed(2)} / $${userProfile.annualGoal} (${annualPercent}%)`}}
                   </div>
                 </v-card>
@@ -123,6 +123,7 @@
           <template v-slot:[`item.profit`]="{ item }">
             <v-chip
               label
+              small
               :color="getColor(item.profit)"
             >{{ item.profit ? `$${item.profit}` : ''}}</v-chip>
           </template>

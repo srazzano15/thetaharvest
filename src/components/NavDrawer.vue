@@ -6,7 +6,7 @@
           {{ userName }}
         </v-list-item-title>
         <v-list-item-subtitle>
-          P/L: <span :class="{ 'green--text': profit > 0, 'red--text': profit < 0 }">{{ profit > 0 ? `+ $${profit}` :  `- $${profit}`}}</span>
+          P/L: <span :class="{ 'green--text': profit > 0, 'red--text': profit < 0 }">{{ profit > 0 ? `+ $${profit.toFixed(2)}` :  `- $${profit.toFixed(2)}`}}</span>
         </v-list-item-subtitle>
       </v-list-item-content>
     </v-list-item>
@@ -43,9 +43,9 @@ export default {
   data () {
     return {
       items: [
-        { title: 'Dashboard', icon: 'mdi-view-dashboard', link: 'Dashboard' },
-        { title: 'Reports', icon: 'mdi-chart-bar', link: 'Reports' },
-        { title: 'Settings', icon: 'mdi-cog', link: 'Settings' }
+        { title: 'Dashboard', icon: 'mdi-view-dashboard', link: 'dashboard' },
+        { title: 'Reports', icon: 'mdi-chart-bar', link: 'reports' },
+        { title: 'Settings', icon: 'mdi-cog', link: 'settings' }
       ],
       right: null
     }

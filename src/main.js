@@ -18,7 +18,8 @@ auth.onAuthStateChanged(user => {
     }).$mount('#app')
   }
 
-  if (user) {
+  const r = router.currentRoute.name
+  if (user && (r !== 'login' && r !== 'register')) {
     store.dispatch('fetchUserProfile', user)
   }
 })

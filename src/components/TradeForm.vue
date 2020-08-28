@@ -229,15 +229,9 @@ export default {
     },
     createTrade () {
       const d = new Date()
-      const strikeDisplay = []
-      this.fields.legs.forEach(leg => {
-        const s = `${leg.action} ${leg.strike} ${leg.type}`
-        strikeDisplay.push(s)
-      })
       this.$store.dispatch('createTrade', {
         ticker: this.fields.ticker.toUpperCase(),
         created: moment(d).format('YYYY-MM-DD'),
-        strikeDisplay: strikeDisplay.join(', '),
         entryDate: this.fields.entryDate,
         expirationDate: this.fields.expirationDate,
         quantity: parseInt(this.fields.quantity),
@@ -245,11 +239,10 @@ export default {
         entryPrice: parseFloat(this.fields.entryPrice),
         legs: this.fields.legs
       })
-
       // reset the form after a few "loading seconds"
       setTimeout(() => {
         this.closeTradeForm()
-      }, 3000)
+      }, 1500)
     },
     addLeg (a, t) {
       const o = {

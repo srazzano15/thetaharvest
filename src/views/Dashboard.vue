@@ -268,7 +268,7 @@
                       <v-col cols="12" md="6">
                         <span class="text--secondary">Annualized Return: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) ? '-' : `$${calcAnnualizedReturn(item.entryDate, item.expirationDate, item.entryPrice, item.quantity)}` }}</strong></span>
                       </v-col>
-                      <v-col cols="12" md="6">
+                      <v-col cols="12">
                         <span class="text--secondary">Annualized Return on Deployed Capital: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) ? '-' : `${(calcAnnualizedReturn(item.entryDate, item.expirationDate, item.entryPrice, item.quantity) / deployedCapital(item.legs, item.quantity) * 100).toFixed(2)}%` }}</strong></span>
                       </v-col>
                     </v-row>

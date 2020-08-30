@@ -23,21 +23,25 @@ const store = new Vuex.Store({
     userProfile: {},
     trades: [],
     loading: true,
-    loginError: ''
+    error: ''
   },
   mutations: {
     navDrawerToggle: state => (state.drawer = !state.drawer),
     setUserProfile: (state, val) => (state.userProfile = val),
     setTrades: (state, val) => (state.trades = val),
     finishedLoading: state => (state.loading = !state.loading),
-    setLoginError: (state, val) => (state.loginError = val)
+    setError: (state, val) => (state.error = val)
   },
   actions: {
-    async login ({ dispatch }, form) {
+    async login ({ dispatch, commit }, form) {
       // init user auth session in FB
-      const { user } = await fb.auth.signInWithEmailAndPassword(form.email, form.password)
-      // fetch user profile and set in state
-      dispatch('fetchUserProfile', user)
+      const { user } = await fb.auth.signInWithEmailAndPassword(form.email, form.password).catch(e => {
+        commit('setError', e.message)
+      })
+      if (Object.keys(user).length > -1) {
+        // fetch user profile and set in state
+        dispatch('fetchUserProfile', user)
+      }
     },
     async fetchUserProfile ({ commit }, user) {
       // fetch user profile
@@ -72,6 +76,7 @@ const store = new Vuex.Store({
 
       // clear userProfile and redirect to /login
       commit('setUserProfile', {})
+      commit('setTrades', [])
       router.push('/')
     },
     async createTrade ({ state, commit }, trade) {
@@ -87,6 +92,25 @@ const store = new Vuex.Store({
         legs: trade.legs,
         userId: fb.auth.currentUser.uid,
         userName: state.userProfile.name
+      })
+      // retrieve trades for the user
+      fb.tradesCollection.orderBy('entryDate', 'desc').onSnapshot(snapshot => {
+        const t = []
+
+        snapshot.forEach(doc => {
+          const trade = doc.data()
+          trade.id = doc.id
+          t.push(trade)
+        })
+
+        store.commit('setTrades', t)
+      })
+    },
+    async editTrade ({ state, commit }, trade) {
+      await fb.tradesCollection.doc(trade.id).update({
+        quantity: trade.quantity,
+        entryPrice: trade.entryPrice,
+        legs: trade.legs
       })
       // retrieve trades for the user
       fb.tradesCollection.orderBy('entryDate', 'desc').onSnapshot(snapshot => {
@@ -246,8 +270,8 @@ const store = new Vuex.Store({
       if (w > 0 && l === 0) {
         r = '100%'
       } else if (w > 0 && l > 0) {
-        r = Math.round(w / (w + l))
-        r = `${r}%`
+        r = w / (w + l) * 100
+        r = `${r.toFixed(2)}%`
       }
       return r
     }

@@ -1,6 +1,6 @@
 <template>
   <v-row justify="center">
-    <v-dialog :value="showTradeForm" persistent max-width="800px">
+    <v-dialog v-model="showTradeForm" persistent max-width="800px">
       <v-card>
         <v-toolbar color="green lighten-1" class="text-h5 elevation-0">
             <v-toolbar-title>{{ formTitle }}</v-toolbar-title>
@@ -9,7 +9,7 @@
           <v-container>
             <v-row>
               <v-col cols="12">
-                <v-text-field color="green" label="Ticker *" v-model="fields.ticker" required></v-text-field>
+                <v-text-field color="green" label="Ticker *" :readonly="index > -1" v-model="fields.ticker" required></v-text-field>
               </v-col>
               <v-col cols="6">
                 <v-menu
@@ -32,7 +32,7 @@
                       v-on="on"
                     ></v-text-field>
                   </template>
-                  <v-date-picker color="green" v-model="fields.entryDate" @input="cal2 = false"></v-date-picker>
+                  <v-date-picker color="green" :disabled="index > -1" v-model="fields.entryDate" @input="cal2 = false"></v-date-picker>
                 </v-menu>
               </v-col>
               <v-col cols="6">
@@ -56,18 +56,19 @@
                       append-icon="mdi-calendar-clock"
                     ></v-text-field>
                   </template>
-                  <v-date-picker color="green" v-model="fields.expirationDate" @input="cal1 = false"></v-date-picker>
+                  <v-date-picker color="green" :disabled="index > -1" v-model="fields.expirationDate" @input="cal1 = false"></v-date-picker>
                 </v-menu>
               </v-col>
               <v-col cols="12">
-                <v-text-field color="green" label="Quantity*" v-model.number="fields.quantity" required></v-text-field>
+                <v-text-field color="green" label="Quantity *" v-model="fields.quantity" required></v-text-field>
               </v-col>
                <v-col cols="12">
-                <v-text-field color="green" v-model.number="fields.entryPrice" label="Entry Price *" required></v-text-field>
+                <v-text-field color="green" v-model="fields.entryPrice" label="Price Filled *" required></v-text-field>
               </v-col>
               <v-col cols="12">
                 <v-select
                   label="Trade Type*"
+                  :readonly="index > -1"
                   required
                   :items="types"
                   @input="$emit('type-changed')"
@@ -82,15 +83,19 @@
               <v-col cols="12" v-if="fields.type">
                 <v-row v-for="(row, i) in fields.legs" :key="i">
                   <v-col cols="4">
-                    <v-text-field readonly color="green" label="Action *" v-model="row.action"></v-text-field>
+                    <v-text-field readonly color="green" label="Action" v-model="row.action"></v-text-field>
                   </v-col>
                   <v-col cols="4">
-                    <v-text-field readonly color="green" v-model="row.type" label="Type *"></v-text-field>
+                    <v-text-field readonly color="green" v-model="row.type" label="Type"></v-text-field>
                   </v-col>
                   <v-col cols="4">
-                    <v-text-field color="green" v-model.number="row.strike" label="Strike *"></v-text-field>
+                    <v-text-field color="green" v-model="row.strike" label="Strike *" required></v-text-field>
                   </v-col>
                 </v-row>
+              </v-col>
+              <v-col cols="12">
+                <v-alert v-if="showSuccess && index > -1" dense outlined type="success">Trade successfully updated!</v-alert>
+                <v-alert v-else-if="showSuccess && index === -1" dense outlined type="success">New trade created successfully!</v-alert>
               </v-col>
               <!-- set 1 -->
             </v-row>
@@ -100,7 +105,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="grey darken-1" text @click="closeTradeForm">Close</v-btn>
-          <v-btn color="green darken-1 ml-5" @click="createTrade">Submit</v-btn>
+          <v-btn color="green darken-1 ml-5" @click="index > -1 ? updateTrade() : createTrade()">Submit</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -112,7 +117,7 @@ import { mapState } from 'vuex'
 import moment from 'moment'
 export default {
   name: 'TradeForm',
-  props: ['showTradeForm', 'edit'],
+  props: ['showTradeForm', 'index', 'item'],
   data () {
     return {
       cal1: false,
@@ -133,6 +138,7 @@ export default {
         ]
       },
       helpText: null,
+      showSuccess: false,
       types: [
         'Put Credit Spread',
         'Call Credit Spread',
@@ -151,6 +157,9 @@ export default {
     }
   },
   created () {
+    this.$root.$on('edit-trade', () => {
+      this.fields = { ...this.trades[this.index] }
+    })
     if (this.fields.type) {
       this.fields.legs = []
       this.initializeLegs(this.fields.type)
@@ -161,35 +170,9 @@ export default {
     })
   },
   computed: {
-    legs () {
-      const one = ['Long Naked Put', 'Long Naked Call', 'Cash Secured Put', 'Covered Call']
-      const two = [
-        'Put Credit Spread',
-        'Call Credit Spread',
-        'Put Debit Spread',
-        'Call Debit Spread',
-        'Short Straddle',
-        'Long Straddle',
-        'Short Strangle',
-        'Long Strangle'
-      ]
-
-      if (one.includes(this.fields.type)) {
-        this.setLegValue(this.fields.type)
-        return 1
-      } else if (two.includes(this.fields.type)) {
-        return 2
-      } else if (this.fields.type === 'Jade Lizard') {
-        return 3
-      } else if (this.fields.type === 'Iron Condor' || this.fields.type === 'Iron Butterfly') {
-        return 4
-      } else {
-        return 0
-      }
-    },
-    ...mapState(['userProfile']),
+    ...mapState(['userProfile', 'trades']),
     formTitle () {
-      return this.editedIndex === -1 ? 'Submit New Trade' : 'Edit Trade'
+      return this.index !== -1 ? 'Edit Trade' : 'Submit New Trade'
     }
   },
   methods: {
@@ -200,32 +183,10 @@ export default {
       this.fields.entryDate = ''
       this.fields.expirationDate = ''
       this.fields.entryPrice = ''
-      this.fields.legOne = {
-        leg: '',
-        strike: ''
-      }
-      this.fields.legTwo = {
-        leg: '',
-        strike: ''
-      }
-      this.fields.legThree = {
-        leg: '',
-        strike: ''
-      }
-      this.fields.legFour = {
-        leg: '',
-        strike: ''
-      }
+      this.fields.legs = []
       this.helpText = ''
+      this.showSuccess = false
       this.$parent.$emit('close-trade-form')
-    },
-    setLegValue (s) {
-      // check if the string has put or call and set the value of that leg for single legs
-      if (s.includes('Put')) {
-        this.fields.legOne.leg = 'Put'
-      } else if (s.includes('Call')) {
-        this.fields.legOne.leg = 'Call'
-      }
     },
     createTrade () {
       const d = new Date()
@@ -239,16 +200,34 @@ export default {
         entryPrice: parseFloat(this.fields.entryPrice),
         legs: this.fields.legs
       })
+      setTimeout(() => {
+        this.showSuccess = true
+      }, 300)
       // reset the form after a few "loading seconds"
       setTimeout(() => {
         this.closeTradeForm()
       }, 1500)
     },
-    addLeg (a, t) {
+    updateTrade () {
+      this.$store.dispatch('editTrade', {
+        quantity: parseInt(this.fields.quantity),
+        entryPrice: parseFloat(this.fields.entryPrice),
+        legs: this.fields.legs,
+        id: this.trades[this.index].id
+      })
+      setTimeout(() => {
+        this.showSuccess = true
+      }, 300)
+      // reset the form after a few "loading seconds"
+      setTimeout(() => {
+        this.closeTradeForm()
+      }, 1500)
+    },
+    addLeg (a, t, s) {
       const o = {
         action: a,
         type: t,
-        strike: ''
+        strike: !s ? '' : s
       }
       return this.fields.legs.push(o)
     },

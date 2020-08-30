@@ -30,16 +30,15 @@
               color="green darken-1"
               :rules="[rules.required, rules.min, rules.passwordSecurity]"
               validate-on-blur
-              @keyup.enter.native="login"
             ></v-text-field>
-            <v-alert v-if="loginError" dense outlined type="error">{{ loginError }}</v-alert>
+            <v-alert v-if="error" dense outlined type="error">{{ error }}</v-alert>
           </v-form>
         </v-card-text>
         <v-card-actions>
           <a class="text-caption pl-4" @click="showPasswordReset = !showPasswordReset">Forgot Password</a>
           <v-spacer></v-spacer>
           <v-btn :to="'register'" color="grey lighten-1">Register</v-btn>
-          <v-btn :disabled="!valid" @click="login" color="green lighten-1" class="ml-4">Login</v-btn>
+          <v-btn @click="login" color="green lighten-1" class="ml-4">Login</v-btn>
         </v-card-actions>
       </v-card>
     </v-col>
@@ -75,7 +74,7 @@ export default {
     this.showForm = Object.keys(this.userProfile).includes('name') ? this.showForm : !this.showForm
   },
   computed: {
-    ...mapState(['userProfile', 'loginError', 'loading'])
+    ...mapState(['userProfile', 'error', 'loading'])
   },
   methods: {
     login () {

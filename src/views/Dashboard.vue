@@ -109,28 +109,32 @@
           :search="tradeSearch"
           :sort-by="['entryDate']"
           :sort-desc="['true']"
+          :single-expand="singleExpand"
+          :expanded.sync="expanded"
+          show-expand
+          item-class="table__text"
         >
           <template v-slot:[`item.legs`]="{ item }">
             <v-chip
               label
-              small
+              x-small
               v-for="(leg, i) in item.legs"
               :key="i"
               class="mr-1 pa-1"
-            >{{ `${leg.action} ${leg.strike} ${leg.type}` }}</v-chip>
+            >{{ leg.strike }}</v-chip>
           </template>
 
           <template v-slot:[`item.profit`]="{ item }">
             <v-chip
               label
-              small
+              x-small
               :color="getColor(item.profit)"
-            >{{ item.profit ? `$${item.profit}` : ''}}</v-chip>
+            >{{ item.profit ? formatProfit(item.profit) : ''}}</v-chip>
           </template>
 
-          <template v-slot:[`item.actions`]="{ item }">
+          <!-- <template v-slot:[`item.actions`]="{ item }">
             <v-btn
-              class="mr-2"
+              class="mr-1"
               v-if="!item.closed"
               color="green lighten-2"
               x-small
@@ -140,15 +144,16 @@
               Close
             </v-btn>
 
-            <!-- <v-btn
-              class="mr-2"
+            <v-btn
+              class="mr-1"
               color="grey lighten-1"
               x-small
+              v-if="!item.closed"
               depressed
               @click="editTrade(item)"
             >
               Edit
-            </v-btn> -->
+            </v-btn>
 
             <v-btn
               x-small
@@ -158,6 +163,120 @@
             >
               Delete
             </v-btn>
+          </template> -->
+
+          <template v-slot:[`expanded-item`]="{ headers, item }">
+            <td :colspan="headers.length">
+              <v-container>
+                <v-row>
+                  <v-col cols="1" class="text--disabled pa-1">
+                    <span>{{ item.created }}</span>
+                  </v-col>
+                  <v-col cols="11" class="text-right pa-1">
+                    <v-btn
+                      class="mr-1"
+                      v-if="!item.closed"
+                      color="green lighten-2"
+                      x-small
+                      depressed
+                      @click="closeTrade(item)"
+                    >
+                      Close
+                    </v-btn>
+
+                    <v-btn
+                      class="mr-1"
+                      color="grey lighten-1"
+                      x-small
+                      v-if="!item.closed"
+                      depressed
+                      @click="editTrade(item)"
+                    >
+                      Edit
+                    </v-btn>
+
+                    <v-btn
+                      x-small
+                      depressed
+                      color="red lighten-1"
+                      @click="deleteTrade(item)"
+                    >
+                      Delete
+                    </v-btn>
+                  </v-col>
+                  <v-col cols="12" class="pa-1">
+                    <h2>{{ item.ticker }}</h2>
+                  </v-col>
+                  <v-col cols="12" class="pa-1">
+                    <h4 class="font-weight-light text-uppercase">{{ item.type }}</h4>
+                  </v-col>
+                  <v-col cols="6" class="pa-1">
+                    <v-chip
+                      label
+                      small
+                      v-for="(leg, i) in item.legs"
+                      :key="i"
+                      class="mr-1 pa-1"
+                    >{{ `${leg.action} ${leg.strike} ${leg.type}` }}</v-chip>
+                  </v-col>
+                  <v-col cols="6" class="pa-1 text-right">
+                        <span v-if="item.closed" class="text--secondary">Profit / Loss:
+                          <v-chip
+                            label
+                            class="ml-2"
+                            :color="getColor(item.profit)"
+                          >{{ item.profit ? formatProfit(item.profit) : '-'}}</v-chip>
+                        </span>
+                      </v-col>
+                  <v-col cols="12" class="pa-1"><v-divider></v-divider></v-col>
+                  <!-- horizontal divider -->
+                  <v-col cols="6" class="pa-1">
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <span class="text--secondary">Opened: <strong class="pl-2 text--primary">{{ item.entryDate }}</strong></span>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <span class="text--secondary">Expiration Date: <strong class="pl-2 text--primary">{{ `${item.expirationDate} (${calcDte(item.expirationDate)} DTE)` }}</strong></span>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <span class="text--secondary">Price Filled: <strong class="pl-2 text--primary">{{ item.entryPrice }}</strong></span>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <span class="text--secondary">Quantity: <strong class="pl-2 text--primary">{{ item.quantity }}</strong></span>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <span class="text--secondary">Closed: <strong class="pl-2 text--primary">{{ item.closeDate || '-'}}</strong></span>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <span class="text--secondary">Price Closed: <strong class="pl-2 text--primary">{{ item.closePrice || '-'}}</strong></span>
+                      </v-col>
+                    </v-row>
+                  </v-col>
+                  <!-- left half -->
+                  <v-divider vertical></v-divider>
+                  <v-col cols="5" class="pa-1 ml-7">
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <span class="text--secondary">Max Profit: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) ? '-' : `$${(item.entryPrice * 100) * item.quantity}` }}</strong></span>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <span class="text--secondary">Deployed Capital: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) ? '-' : `$${deployedCapital(item.legs, item.quantity)}` }}</strong></span>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <span class="text--secondary">Max RoC: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) ? '-' : `${calculateRetOnDeployedCap(item.entryPrice, item.quantity, item.legs)}%` }}</strong></span>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <span class="text--secondary">Annualized Return: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) ? '-' : `$${calcAnnualizedReturn(item.entryDate, item.expirationDate, item.entryPrice, item.quantity)}` }}</strong></span>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <span class="text--secondary">Annualized Return on Deployed Capital: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) ? '-' : `${(calcAnnualizedReturn(item.entryDate, item.expirationDate, item.entryPrice, item.quantity) / deployedCapital(item.legs, item.quantity) * 100).toFixed(2)}%` }}</strong></span>
+                      </v-col>
+                    </v-row>
+                  </v-col>
+                  <!-- right half -->
+                </v-row>
+              </v-container>
+            </td>
           </template>
         </v-data-table>
       </v-card>
@@ -165,6 +284,8 @@
     <!-- trades table -->
     <trade-form
       :showTradeForm="showTradeForm"
+      :index="editedIndex"
+      :item="editedItem"
     ></trade-form>
     <close-trade-form
       :showCloseTradeForm="showCloseTradeForm"
@@ -190,6 +311,8 @@ export default {
   },
   data () {
     return {
+      singleExpand: false,
+      expanded: [],
       headers: [
         {
           text: 'Entry Date',
@@ -232,10 +355,15 @@ export default {
         },
         {
           text: '',
+          value: 'data-table-expand'
+        }
+        /* {
+          text: '',
           value: 'actions',
           sortable: false,
+          width: '20%',
           align: 'end'
-        }
+        } */
       ],
       editedIndex: -1,
       tradeSearch: '',
@@ -250,7 +378,13 @@ export default {
         expirationDate: '',
         entryPrice: '',
         legs: []
-      }
+      },
+      longOptions: [
+        'Long Straddle',
+        'Long Strangle',
+        'Long Naked Call',
+        'Long Naked Put'
+      ]
     }
   },
   mounted () {
@@ -283,9 +417,10 @@ export default {
       this.editedIndex = this.trades.indexOf(item)
       this.showCloseTradeForm = true
     },
-    editTrade (item) {
+    async editTrade (item) {
       this.editedIndex = this.trades.indexOf(item)
-      this.editedItem = Object.assign({}, item)
+      this.editedItem = await Object.assign({}, item)
+      this.$root.$emit('edit-trade')
       this.showTradeForm = true
     },
     deleteTrade (item) {
@@ -294,22 +429,54 @@ export default {
       if (c) {
         this.$store.dispatch('deleteTrade', { index: this.editedIndex })
       }
-    }
-    /* totalProfit(array) {
-      const
-    } */
-  },
-  filters: {
-    formatDate (val) {
-      if (!val) return '-'
-
-      const date = val.toDate()
-      return moment(date).format('MM/DD/YYYY')
+    },
+    formatProfit (val) {
+      if (!val) {
+        return ''
+      } else {
+        return val > 0 ? `$${val.toFixed(2)}` : `-$${val.toFixed(2) * -1}`
+      }
+    },
+    calcTotal (value, quantity) {
+      return (value * 100) * quantity
+    },
+    calcDte (exp) {
+      // get days to expiration
+      const d = new Date()
+      const x = moment(d)
+      const y = moment(exp)
+      return y.diff(x, 'days')
+    },
+    deployedCapital (legs, quantity) {
+      if (!legs) return false
+      let sum = 0
+      legs.forEach(leg => {
+        sum += parseFloat(leg.strike)
+      })
+      return this.calcTotal(sum, quantity)
+    },
+    calculateRetOnDeployedCap (price, quantity, legs) {
+      const mP = this.calcTotal(price, quantity)
+      const dC = this.deployedCapital(legs, quantity)
+      const rODC = (mP / dC) * 100
+      return rODC.toFixed(2)
+    },
+    calcAnnualizedReturn (entry, exp, price, quantity) {
+      // get days to expiration
+      const x = moment(entry)
+      const y = moment(exp)
+      const dte = y.diff(x, 'days')
+      // get max profit
+      const mP = this.calcTotal(price, quantity)
+      // divide max profit by days to expiration
+      const dailyReturn = mP / dte
+      // multiply by 365
+      return (dailyReturn * 365).toFixed(2)
     }
   }
 }
 </script>
 
-<style>
+<style scoped>
 
 </style>

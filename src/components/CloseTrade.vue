@@ -12,7 +12,7 @@
                 <v-text-field color="green" label="Close Date *" v-model="closeDate" readonly=""></v-text-field>
               </v-col>
               <v-col cols="4">
-                <v-text-field color="green" label="Close Price *" v-model="closePrice" required></v-text-field>
+                <v-text-field color="green" label="Price Closed *" v-model="closePrice" required></v-text-field>
               </v-col>
               <v-col cols="4">
                 <v-text-field color="green" label="Total Commissions Paid" v-model="commissions"></v-text-field>
@@ -42,7 +42,9 @@ export default {
       closePrice: '',
       cal: false,
       closeDate: moment(new Date()).format('YYYY-MM-DD'),
-      commissions: ''
+      commissions: '',
+      assigned: false,
+      rollingTrade: false
     }
   },
   computed: {
@@ -51,6 +53,7 @@ export default {
   methods: {
     closeTradeForm () {
       this.closePrice = ''
+      this.commissions = ''
       this.$parent.$emit('close-form')
     },
     closeTrade () {
@@ -63,7 +66,7 @@ export default {
       // reset the form after a few "loading seconds"
       setTimeout(() => {
         this.closeTradeForm()
-      }, 3000)
+      }, 1500)
     }
   }
 }

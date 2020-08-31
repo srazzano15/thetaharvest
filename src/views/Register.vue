@@ -2,7 +2,7 @@
   <v-row align="center" justify="center">
     <v-col cols="12" sm="8" md="4">
       <v-card class="elevation-6">
-        <v-toolbar color="green lighten-1" dark flat>
+        <v-toolbar color="green lighten-1" flat>
           <v-toolbar-title>Register Account</v-toolbar-title>
           <v-spacer></v-spacer>
         </v-toolbar>
@@ -54,11 +54,12 @@
               validate-on-blur
             ></v-text-field>
           </v-form>
+          <v-alert v-if="error" dense outlined type="error">{{ error }}</v-alert>
         </v-card-text>
         <v-card-actions>
           <a class="text-caption pl-4" href="javascript:void(0)">Forgot Password</a>
           <v-spacer></v-spacer>
-          <v-btn @click="register" color="green lighten-1" class="white--text">Register</v-btn>
+          <v-btn @click="register" color="green lighten-1">Register</v-btn>
         </v-card-actions>
       </v-card>
     </v-col>
@@ -89,7 +90,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(['userProfile']),
+    ...mapState(['userProfile', 'error']),
     hasAuth () {
       return Object.keys(this.userProfile).length < 0
     }

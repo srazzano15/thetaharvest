@@ -2,6 +2,7 @@
   <v-row justify="center">
     <v-dialog v-model="showTradeForm" persistent max-width="800px">
       <v-card>
+        <v-form @sumbit.prevent>
         <v-toolbar color="green lighten-1" class="text-h5 elevation-0">
             <v-toolbar-title>{{ formTitle }}</v-toolbar-title>
         </v-toolbar>
@@ -9,7 +10,7 @@
           <v-container>
             <v-row>
               <v-col cols="12">
-                <v-text-field color="green" label="Ticker *" :readonly="index > -1" v-model="fields.ticker" required></v-text-field>
+                <v-text-field color="green" label="Ticker *" :readonly="index > -1" v-model.trim="fields.ticker" required></v-text-field>
               </v-col>
               <v-col cols="6">
                 <v-menu
@@ -60,10 +61,10 @@
                 </v-menu>
               </v-col>
               <v-col cols="12">
-                <v-text-field color="green" label="Quantity *" v-model="fields.quantity" required></v-text-field>
+                <v-text-field color="green" label="Quantity *" v-model.number="fields.quantity" required></v-text-field>
               </v-col>
-               <v-col cols="12">
-                <v-text-field color="green" v-model="fields.entryPrice" label="Price Filled *" required></v-text-field>
+              <v-col cols="12">
+                <v-text-field color="green" v-model.number="fields.entryPrice" label="Price Filled *" required></v-text-field>
               </v-col>
               <v-col cols="12">
                 <v-select
@@ -89,9 +90,19 @@
                     <v-text-field readonly color="green" v-model="row.type" label="Type"></v-text-field>
                   </v-col>
                   <v-col cols="4">
-                    <v-text-field color="green" v-model="row.strike" label="Strike *" required></v-text-field>
+                    <v-text-field color="green" v-model.number="row.strike" label="Strike *" required></v-text-field>
                   </v-col>
                 </v-row>
+              </v-col>
+              <v-col cols="12">
+                <v-textarea
+                  auto-grow
+                  rows="2"
+                  color="green"
+                  v-model.trim="fields.notes"
+                  label="Notes"
+                  placeholder="Optional"
+                ></v-textarea>
               </v-col>
               <v-col cols="12">
                 <v-alert v-if="showSuccess && index > -1" dense outlined type="success">Trade successfully updated!</v-alert>
@@ -101,12 +112,13 @@
             </v-row>
           </v-container>
           <small>* indicates required field</small>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="grey darken-1" text @click="closeTradeForm">Close</v-btn>
-          <v-btn color="green darken-1 ml-5" @click="index > -1 ? updateTrade() : createTrade()">Submit</v-btn>
-        </v-card-actions>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="grey darken-1" text @click="closeTradeForm">Close</v-btn>
+            <v-btn color="green darken-1 ml-5" @click="index > -1 ? updateTrade() : createTrade()">Submit</v-btn>
+          </v-card-actions>
+        </v-form>
       </v-card>
     </v-dialog>
   </v-row>
@@ -122,6 +134,7 @@ export default {
     return {
       cal1: false,
       cal2: false,
+      valid: true,
       fields: {
         type: '',
         ticker: '',
@@ -129,6 +142,7 @@ export default {
         entryDate: '',
         expirationDate: '',
         entryPrice: '',
+        notes: '',
         legs: [
           {
             action: '',
@@ -183,6 +197,7 @@ export default {
       this.fields.entryDate = ''
       this.fields.expirationDate = ''
       this.fields.entryPrice = ''
+      this.fields.notes = ''
       this.fields.legs = []
       this.helpText = ''
       this.showSuccess = false
@@ -196,6 +211,7 @@ export default {
         entryDate: this.fields.entryDate,
         expirationDate: this.fields.expirationDate,
         quantity: parseInt(this.fields.quantity),
+        notes: this.fields.notes,
         type: this.fields.type,
         entryPrice: parseFloat(this.fields.entryPrice),
         legs: this.fields.legs
@@ -212,6 +228,7 @@ export default {
       this.$store.dispatch('editTrade', {
         quantity: parseInt(this.fields.quantity),
         entryPrice: parseFloat(this.fields.entryPrice),
+        notes: this.fields.notes,
         legs: this.fields.legs,
         id: this.trades[this.index].id
       })

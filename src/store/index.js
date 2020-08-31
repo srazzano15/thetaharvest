@@ -3,7 +3,8 @@ import Vuex from 'vuex'
 import * as fb from '../firebase/firebase'
 import router from '../router/index'
 import moment from 'moment'
-// import { isNavigationFailure } from 'vue-router'
+import _ from 'lodash'
+
 Vue.use(Vuex)
 
 // get this is real time
@@ -56,20 +57,24 @@ const store = new Vuex.Store({
       }
       commit('finishedLoading')
     },
-    async register ({ dispatch }, form) {
+    async register ({ dispatch, commit }, form) {
       // sign user up in FB
-      const { user } = await fb.auth.createUserWithEmailAndPassword(form.email, form.password)
-
-      // create user profile object in usersCollections
-      await fb.usersCollection.doc(user.uid).set({
-        name: form.name,
-        email: form.email,
-        monthlyGoal: 0,
-        annualGoal: 0
+      const { user } = await fb.auth.createUserWithEmailAndPassword(form.email, form.password).catch(e => {
+        commit('setError', e.message)
       })
 
-      // fetch user profile and set in state
-      dispatch('fetchUserProfile', user)
+      if (user && Object.keys(user).length > -1) {
+        // create user profile object in usersCollections
+        await fb.usersCollection.doc(user.uid).set({
+          name: form.name,
+          email: form.email,
+          monthlyGoal: 0,
+          annualGoal: 0
+        }).catch(e => e)
+
+        // fetch user profile and set in state
+        dispatch('fetchUserProfile', user)
+      }
     },
     async logout ({ commit }) {
       await fb.auth.signOut()
@@ -90,6 +95,7 @@ const store = new Vuex.Store({
         quantity: trade.quantity,
         entryPrice: trade.entryPrice,
         legs: trade.legs,
+        notes: trade.notes,
         userId: fb.auth.currentUser.uid,
         userName: state.userProfile.name
       })
@@ -110,7 +116,8 @@ const store = new Vuex.Store({
       await fb.tradesCollection.doc(trade.id).update({
         quantity: trade.quantity,
         entryPrice: trade.entryPrice,
-        legs: trade.legs
+        legs: trade.legs,
+        notes: trade.notes
       })
       // retrieve trades for the user
       fb.tradesCollection.orderBy('entryDate', 'desc').onSnapshot(snapshot => {
@@ -274,6 +281,71 @@ const store = new Vuex.Store({
         r = `${r.toFixed(2)}%`
       }
       return r
+    },
+    trendingTickers: (state) => {
+      // only trades from the last 1 week
+      const today = moment(new Date())
+
+      const recentTrades = state.trades.filter(trade => {
+        return today.diff(moment(trade.entryDate), 'days') < 7
+      })
+      // create an object
+      const tickers = {}
+      const trending = []
+      // run a loop over all trades
+      recentTrades.forEach(trade => {
+        // check if the ticker is a key in the object
+        if (Object.keys(tickers).includes(trade.ticker)) {
+          // if the key exists, push a value to the array object key array
+          tickers[trade.ticker].push(trade.userId)
+        } else {
+          // if not, create a new key in the object with an array as the value
+          tickers[trade.ticker] = [trade.userId]
+        }
+      })
+      // once the above process is complete, we will iterate over each object key
+      for (const ticker in tickers) {
+        // then we will flatten each array to unique values
+        const arr = _.uniq(tickers[ticker])
+        if (arr.length > 1) {
+          // if the key => value array has more than 1 unique value, put that in an array
+          trending.push(ticker)
+        }
+      }
+      // return the array
+      // return _.join(trending, ' ')
+      return trending
+    },
+    trendingSentiment: (state) => {
+      // only trades from the last 1 week
+      const today = moment(new Date())
+
+      const recentTrades = state.trades.filter(trade => {
+        return today.diff(moment(trade.entryDate), 'days') < 7
+      })
+      let counted = 0
+      let bt = 0
+      const bullish = [
+        'Put Credit Spread',
+        'Cash Secured Put',
+        'Jade Lizard',
+        'Long Naked Call'
+      ]
+      const bearish = [
+        'Call Credit Spread',
+        'Covered Call',
+        'Long Naked Put'
+      ]
+
+      recentTrades.forEach(trade => {
+        if (bullish.includes(trade.type)) {
+          counted++
+          bt++
+        } else if (bearish.includes(trade.type)) {
+          counted++
+        }
+      })
+      return Math.round((bt / counted) * 100)
     }
   }
 })

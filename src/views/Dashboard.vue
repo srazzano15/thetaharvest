@@ -8,8 +8,13 @@
         <v-toolbar color="green lighten-1" class="text-h5 elevation-2">
           <v-toolbar-title>Performance at a Glance</v-toolbar-title>
         </v-toolbar>
-        <v-card-text>
-          <v-container fluid>
+        <v-tabs grow color="green">
+          <v-tab>Monthly</v-tab>
+          <v-tab>Annual</v-tab>
+          <v-tab>All Time</v-tab>
+        <v-tab-item>
+          <!-- <v-card flat>
+          <v-card-text>
             <v-row>
               <v-col cols="12" md="2">
                 <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-h6"># of Trades
@@ -74,8 +79,153 @@
                 </v-card>
               </v-col>
             </v-row>
-          </v-container>
-        </v-card-text>
+          </v-card-text>
+          </v-card> -->
+          <performance-card :timeFrame="`month`"></performance-card>
+        </v-tab-item>
+        <v-tab-item>
+          <performance-card :timeFrame="`year`"></performance-card>
+          <!-- <v-card flat>
+          <v-card-text>
+            <v-row>
+              <v-col cols="12" md="2">
+                <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-h6"># of Trades
+                  <div v-if="loading" class="grey--text text--darken-3 text-h3 font-weight-thin pt-4">
+                    Loading...
+                  </div>
+                  <div v-else class="grey--text text--darken-3 text-h3 text-lg-h4 pt-4">
+                    {{ userTrades.length }}
+                  </div>
+                </v-card>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-h6">Profit/Loss:
+                  <div v-if="loading" class="grey--text text--darken-3 text-h2 font-weight-thin pt-4">
+                    Loading...
+                  </div>
+                  <div v-else class="text-h4 text-lg-h4 pt-4" :class="{ 'green--text': profit > 0, 'red--text': profit < 0 }">
+                    {{ 0 > profit ? `- $${profit.toFixed(2)}` :  `+ $${profit.toFixed(2)}`}}
+                  </div>
+                </v-card>
+              </v-col>
+              <v-col cols="12" md="3">
+                <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-h6">Win   Ratio
+                  <div v-if="loading" class="grey--text text--darken-3 text-h2 font-weight-thin pt-4">
+                    Loading...
+                  </div>
+                  <div v-else class="grey--text text--darken-3 text-h3 text-lg-h4 pt-4">
+                    {{ `${winTotal} / ${lossTotal}` }}
+                  </div>
+                </v-card>
+              </v-col>
+              <v-col cols="12" md="3">
+                <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-h6">Win Percentage
+                  <div v-if="loading" class="grey--text text--darken-3 text-h2 font-weight-thin pt-4">
+                    Loading...
+                  </div>
+                  <div v-else class="grey--text text--darken-3 text-h3 text-lg-h4 pt-4">
+                    {{ ratioPercentage  }}
+                  </div>
+                </v-card>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-card color="blue-grey lighten-4" class="text-center px-2 py-6 text-h5 grey--text text--darken-1">Progress To Monthly Goal
+                  <div v-if="loading" class="grey--text text--darken-3 text-h3 font-weight-thin pt-4">
+                    Loading...
+                  </div>
+                  <div v-else class="grey--text text--darken-3 text-h3 text-lg-h4 pt-4">
+                    {{ `$${monthlyTotal.toFixed(2)} / $${userProfile.monthlyGoal} (${monthlyPercent}%)`}}
+                  </div>
+                </v-card>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-h5">Progress to Annual Goal
+                  <div v-if="loading" class="grey--text text--darken-3 text-h3 font-weight-thin pt-4">
+                    Loading...
+                  </div>
+                  <div v-else class="grey--text text--darken-3 text-h3 text-lg-h4 pt-4">
+                    {{ `$${annualTotal.toFixed(2)} / $${userProfile.annualGoal} (${annualPercent}%)`}}
+                  </div>
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-card-text>
+          </v-card> -->
+        </v-tab-item>
+        <v-tab-item>
+          <performance-card :timeFrame="`allTime`"></performance-card>
+          <!-- <v-card flat>
+          <v-card-text>
+            <v-row>
+              <v-col cols="12" md="2">
+                <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-h6"># of Trades
+                  <div v-if="loading" class="grey--text text--darken-3 text-h3 font-weight-thin pt-4">
+                    Loading...
+                  </div>
+                  <div v-else class="grey--text text--darken-3 text-h3 text-lg-h4 pt-4">
+                    {{ userTrades.length }}
+                  </div>
+                </v-card>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-h6">Profit/Loss:
+                  <div v-if="loading" class="grey--text text--darken-3 text-h2 font-weight-thin pt-4">
+                    Loading...
+                  </div>
+                  <div v-else class="text-h4 text-lg-h4 pt-4" :class="{ 'green--text': profit > 0, 'red--text': profit < 0 }">
+                    {{ 0 > profit ? `- $${profit.toFixed(2)}` :  `+ $${profit.toFixed(2)}`}}
+                  </div>
+                </v-card>
+              </v-col>
+              <v-col cols="12" md="3">
+                <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-h6">Win   Ratio
+                  <div v-if="loading" class="grey--text text--darken-3 text-h2 font-weight-thin pt-4">
+                    Loading...
+                  </div>
+                  <div v-else class="grey--text text--darken-3 text-h3 text-lg-h4 pt-4">
+                    {{ `${winTotal} / ${lossTotal}` }}
+                  </div>
+                </v-card>
+              </v-col>
+              <v-col cols="12" md="3">
+                <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-h6">Win Percentage
+                  <div v-if="loading" class="grey--text text--darken-3 text-h2 font-weight-thin pt-4">
+                    Loading...
+                  </div>
+                  <div v-else class="grey--text text--darken-3 text-h3 text-lg-h4 pt-4">
+                    {{ ratioPercentage  }}
+                  </div>
+                </v-card>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-card color="blue-grey lighten-4" class="text-center px-2 py-6 text-h5 grey--text text--darken-1">Progress To Monthly Goal
+                  <div v-if="loading" class="grey--text text--darken-3 text-h3 font-weight-thin pt-4">
+                    Loading...
+                  </div>
+                  <div v-else class="grey--text text--darken-3 text-h3 text-lg-h4 pt-4">
+                    {{ `$${monthlyTotal.toFixed(2)} / $${userProfile.monthlyGoal} (${monthlyPercent}%)`}}
+                  </div>
+                </v-card>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-h5">Progress to Annual Goal
+                  <div v-if="loading" class="grey--text text--darken-3 text-h3 font-weight-thin pt-4">
+                    Loading...
+                  </div>
+                  <div v-else class="grey--text text--darken-3 text-h3 text-lg-h4 pt-4">
+                    {{ `$${annualTotal.toFixed(2)} / $${userProfile.annualGoal} (${annualPercent}%)`}}
+                  </div>
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-card-text>
+          </v-card> -->
+        </v-tab-item>
+        </v-tabs>
         <v-divider></v-divider>
         <v-card-actions>
           <v-col cols="6">
@@ -87,8 +237,6 @@
         </v-card-actions>
       </v-card>
     </v-col>
-    <!-- Basic Account Metrics -->
-    <!-- Add trade form modal -->
     <v-col cols="12">
       <v-card>
         <v-toolbar color="blue-grey lighten-2" class="text-h5 elevation-2">
@@ -169,10 +317,10 @@
             <td :colspan="headers.length">
               <v-container>
                 <v-row>
-                  <v-col cols="1" class="text--disabled pa-1">
+                  <v-col cols="3" class="text--disabled pa-1">
                     <span>{{ item.created }}</span>
                   </v-col>
-                  <v-col cols="11" class="text-right pa-1">
+                  <v-col cols="9" class="text-right pa-1">
                     <v-btn
                       class="mr-1"
                       v-if="!item.closed"
@@ -236,7 +384,7 @@
                         <span class="text--secondary">Opened: <strong class="pl-2 text--primary">{{ item.entryDate }}</strong></span>
                       </v-col>
                       <v-col cols="12" md="6">
-                        <span class="text--secondary">Expiration Date: <strong class="pl-2 text--primary">{{ `${item.expirationDate} (${calcDte(item.expirationDate)} DTE)` }}</strong></span>
+                        <span class="text--secondary">Expiration Date: <strong class="pl-2 text--primary">{{ `${item.expirationDate} ${displayDte(item.expirationDate, item.closed)}` }}</strong></span>
                       </v-col>
                       <v-col cols="12" md="6">
                         <span class="text--secondary">Price Filled: <strong class="pl-2 text--primary">{{ item.entryPrice }}</strong></span>
@@ -253,8 +401,8 @@
                     </v-row>
                   </v-col>
                   <!-- left half -->
-                  <v-divider vertical></v-divider>
-                  <v-col cols="5" class="pa-1 ml-7">
+                  <v-divider class="d-none d-md-block" vertical></v-divider>
+                  <v-col cols="12" md="5" class="pa-1 ml-md-7">
                     <v-row>
                       <v-col cols="12" md="6">
                         <span class="text--secondary">Max Profit: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) ? '-' : `$${(item.entryPrice * 100) * item.quantity}` }}</strong></span>
@@ -274,6 +422,10 @@
                     </v-row>
                   </v-col>
                   <!-- right half -->
+                  <v-col cols="12" class="pa-1"><v-divider></v-divider></v-col>
+                  <v-col cols="12">
+                    <span class="text--secondary">Notes: <strong class="pl-2 text--primary">{{ item.notes }}</strong></span>
+                  </v-col>
                 </v-row>
               </v-container>
             </td>
@@ -303,11 +455,13 @@ import TradeForm from '@/components/TradeForm'
 import CloseTradeForm from '@/components/CloseTrade'
 import GoalsForm from '@/components/GoalsForm'
 import moment from 'moment'
+import PerformanceCard from '@/components/PerformanceCard'
 export default {
   components: {
     'trade-form': TradeForm,
     'close-trade-form': CloseTradeForm,
-    'goals-form': GoalsForm
+    'goals-form': GoalsForm,
+    'performance-card': PerformanceCard
   },
   data () {
     return {
@@ -375,6 +529,7 @@ export default {
         ticker: '',
         quantity: '',
         entryDate: '',
+        notes: '',
         expirationDate: '',
         entryPrice: '',
         legs: []
@@ -428,6 +583,7 @@ export default {
       this.editedIndex = this.trades.indexOf(item)
       if (c) {
         this.$store.dispatch('deleteTrade', { index: this.editedIndex })
+        this.editedIndex = -1
       }
     },
     formatProfit (val) {
@@ -446,6 +602,12 @@ export default {
       const x = moment(d)
       const y = moment(exp)
       return y.diff(x, 'days')
+    },
+    displayDte (exp, closed) {
+      const dte = this.calcDte(exp)
+      if (closed) return '(Closed)'
+      else if (dte >= 0) return `(${dte} DTE)`
+      else if (dte < 0) return '(Expired)'
     },
     deployedCapital (legs, quantity) {
       if (!legs) return false

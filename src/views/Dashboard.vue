@@ -228,12 +228,12 @@
         </v-tabs>
         <v-divider></v-divider>
         <v-card-actions>
-          <v-col cols="6">
+          <v-col cols="12">
             <v-btn color="green" @click="showTradeForm = true">Add Trade</v-btn>
           </v-col>
-          <v-col cols="6" class="text-right">
+          <!-- <v-col cols="6" class="text-right">
             <v-btn color="grey" @click="showGoalsForm = true">Goals</v-btn>
-          </v-col>
+          </v-col> -->
         </v-card-actions>
       </v-card>
     </v-col>
@@ -405,19 +405,19 @@
                   <v-col cols="12" md="5" class="pa-1 ml-md-7">
                     <v-row>
                       <v-col cols="12" md="6">
-                        <span class="text--secondary">Max Profit: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) ? '-' : `$${(item.entryPrice * 100) * item.quantity}` }}</strong></span>
+                        <span class="text--secondary">Max Profit: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) || item.type === 'Covered Call' ? '-' : `$${(item.entryPrice * 100) * item.quantity}` }}</strong></span>
                       </v-col>
                       <v-col cols="12" md="6">
-                        <span class="text--secondary">Deployed Capital: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) ? '-' : `$${deployedCapital(item.legs, item.quantity)}` }}</strong></span>
+                        <span class="text--secondary">Deployed Capital: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) || item.type === 'Covered Call' ? '-' : `$${deployedCapital(item.legs, item.quantity)}` }}</strong></span>
                       </v-col>
                       <v-col cols="12" md="6">
-                        <span class="text--secondary">Max RoC: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) ? '-' : `${calculateRetOnDeployedCap(item.entryPrice, item.quantity, item.legs)}%` }}</strong></span>
+                        <span class="text--secondary">Max RoC: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) || item.type === 'Covered Call' ? '-' : `${calculateRetOnDeployedCap(item.entryPrice, item.quantity, item.legs)}%` }}</strong></span>
                       </v-col>
                       <v-col cols="12" md="6">
-                        <span class="text--secondary">Annualized Return: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) ? '-' : `$${calcAnnualizedReturn(item.entryDate, item.expirationDate, item.entryPrice, item.quantity)}` }}</strong></span>
+                        <span class="text--secondary">Annualized Return: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) || item.type === 'Covered Call' ? '-' : `$${calcAnnualizedReturn(item.entryDate, item.expirationDate, item.entryPrice, item.quantity)}` }}</strong></span>
                       </v-col>
                       <v-col cols="12">
-                        <span class="text--secondary">Annualized Return on Deployed Capital: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) ? '-' : `${(calcAnnualizedReturn(item.entryDate, item.expirationDate, item.entryPrice, item.quantity) / deployedCapital(item.legs, item.quantity) * 100).toFixed(2)}%` }}</strong></span>
+                        <span class="text--secondary">Annualized Return on Deployed Capital: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) || item.type === 'Covered Call' ? '-' : `${(calcAnnualizedReturn(item.entryDate, item.expirationDate, item.entryPrice, item.quantity) / deployedCapital(item.legs, item.quantity) * 100).toFixed(2)}%` }}</strong></span>
                       </v-col>
                     </v-row>
                   </v-col>
@@ -549,6 +549,7 @@ export default {
     })
     vm.$on('close-form', () => {
       this.showCloseTradeForm = false
+      this.editedIndex = -1
     })
     vm.$on('close-goal-form', () => {
       this.showGoalsForm = false

@@ -59,12 +59,12 @@
           </v-card>
         </v-col>
         <v-col cols="6" md="3">
-          <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-body-2 text-md-h6">Avg Close
+          <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-body-2 text-md-h6">Realized Gain
             <div v-if="loading" class="grey--text text--darken-3 text-button text-md-h4 font-weight-thin pt-4">
               Loading...
             </div>
             <div v-else class="grey--text text--darken-3 text-h5 text-md-h4 pt-4">
-              {{ `${((calcProfit / calcMaxProfit) * 100).toFixed(2)}%` }}
+              {{ `${((calcProfit / calcDeployedCap) * 100).toFixed(2)}%` }}
             </div>
           </v-card>
         </v-col>
@@ -250,13 +250,15 @@ export default {
       let sum = 0
       const t = time ? this.filterUserTrades(time) : this.userTrades
       t.forEach(trade => {
-        if (!trade.type.includes('Long')) {
+        if (!trade.type.includes('Long') && !trade.type.includes('Covered Call')) {
           const q = trade.quantity
           let s = 0
           for (const leg of trade.legs) {
             s += parseFloat(leg.strike)
           }
           sum += this.calcTotal(s, q)
+        } else if (trade.type.includes('Long')) {
+          sum += this.calcTotal(trade.entryPrice, trade.quantity)
         }
       })
 

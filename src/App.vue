@@ -25,7 +25,7 @@
     <v-footer
     >
       <v-col cols="12" class="text-center font-weight-medium">
-        v0.3.0 - Theta Harvest {{ new Date().getFullYear() }}
+        v0.3.2 - Theta Harvest {{ new Date().getFullYear() }}
       </v-col>
     </v-footer>
   </v-app>

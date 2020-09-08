@@ -9,8 +9,14 @@
         <v-card-text>
           <v-container>
             <v-row>
-              <v-col cols="12">
+              <v-col cols="9">
                 <v-text-field color="green" label="Ticker *" :readonly="index > -1" v-model.trim="fields.ticker" required></v-text-field>
+              </v-col>
+              <v-col cols="2" class="text-right">
+                <v-switch color="green" label="Wheel" :readonly="index > -1" v-model="wheel"></v-switch>
+              </v-col>
+              <v-col cols="1">
+                <tool-tip :text="'The Wheel feature is designed to take steps out of setting up your wheel trade. This feature will create a new Cost Basis entry for the symbol you are going to wheel and track your cost basis with each trade without having to update the entry.'"></tool-tip>
               </v-col>
               <v-col cols="6">
                 <v-menu
@@ -71,7 +77,7 @@
                   label="Trade Type*"
                   :readonly="index > -1"
                   required
-                  :items="types"
+                  :items="wheel ? wheelTypes : types"
                   @input="$emit('type-changed')"
                   v-model="fields.type"
                   color="green"
@@ -99,7 +105,7 @@
                   auto-grow
                   rows="2"
                   color="green"
-                  v-model.trim="fields.notes"
+                  v-model="fields.notes"
                   label="Notes"
                   placeholder="Optional"
                 ></v-textarea>
@@ -127,14 +133,20 @@
 <script>
 import { mapState } from 'vuex'
 import moment from 'moment'
+import _ from 'lodash'
+import Tooltip from '@/components/Tooltip'
 export default {
   name: 'TradeForm',
   props: ['showTradeForm', 'index', 'item'],
+  components: {
+    'tool-tip': Tooltip
+  },
   data () {
     return {
       cal1: false,
       cal2: false,
       valid: true,
+      wheel: false,
       fields: {
         type: '',
         ticker: '',
@@ -167,6 +179,10 @@ export default {
         'Long Strangle',
         'Long Naked Call',
         'Long Naked Put'
+      ],
+      wheelTypes: [
+        'Cash Secured Put',
+        'Covered Call'
       ]
     }
   },
@@ -200,6 +216,7 @@ export default {
       this.fields.notes = ''
       this.fields.legs = []
       this.helpText = ''
+      this.wheel = false
       this.showSuccess = false
       this.$parent.$emit('close-trade-form')
     },
@@ -216,6 +233,26 @@ export default {
         entryPrice: parseFloat(this.fields.entryPrice),
         legs: this.fields.legs
       })
+      if (this.wheel && this.fields.type === 'Cash Secured Put') {
+        const t = this.fields.ticker.toUpperCase()
+        const q = this.fields.quantity * 100
+        const stock = {
+          ticker: t,
+          quantity: q,
+          costBasis: this.fields.legs[0].strike
+        }
+        const userStocks = this.userProfile.userStocks
+        const i = _.findIndex(userStocks, (o) => {
+          return o.ticker === t
+        })
+        // if userStocks has stocks in it...
+        if (i > -1) {
+          userStocks[i] = stock
+        } else {
+          userStocks.push(stock)
+        }
+        this.$store.dispatch('addStock', userStocks)
+      }
       setTimeout(() => {
         this.showSuccess = true
       }, 300)

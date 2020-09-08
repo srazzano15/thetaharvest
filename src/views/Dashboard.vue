@@ -228,209 +228,223 @@
         </v-tabs>
         <v-divider></v-divider>
         <v-card-actions>
-          <v-col cols="12">
+          <v-col cols="6">
             <v-btn color="green" @click="showTradeForm = true">Add Trade</v-btn>
           </v-col>
-          <!-- <v-col cols="6" class="text-right">
-            <v-btn color="grey" @click="showGoalsForm = true">Goals</v-btn>
-          </v-col> -->
+          <v-col cols="6" class="text-right">
+            <v-btn color="grey" class="mr-md-3" @click="showStockForm = true">Add Stock</v-btn>
+            <tool-tip
+              :text="'For stocks that you\'re currently selling Covered Calls against, add stocks to your portfolio to track cost basis from your collected premium from trades.'"
+            ></tool-tip>
+          </v-col>
         </v-card-actions>
       </v-card>
     </v-col>
     <v-col cols="12">
       <v-card>
-        <v-toolbar color="blue-grey lighten-2" class="text-h5 elevation-2">
-          <v-toolbar-title color="">Trades</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-text-field
-            v-model="tradeSearch"
-            append-icon="mdi-magnify"
-            label="Search"
-            single-line
-            color="black"
-            hide-details
-          ></v-text-field>
-        </v-toolbar>
-        <v-data-table
-          :headers="headers"
-          :items="userTrades"
-          :search="tradeSearch"
-          :sort-by="['entryDate']"
-          :sort-desc="['true']"
-          :single-expand="singleExpand"
-          :expanded.sync="expanded"
-          show-expand
-          item-class="table__text"
-        >
-          <template v-slot:[`item.legs`]="{ item }">
-            <v-chip
-              label
-              x-small
-              v-for="(leg, i) in item.legs"
-              :key="i"
-              class="mr-1 pa-1"
-            >{{ leg.strike }}</v-chip>
-          </template>
+        <v-tabs background-color="blue-grey lighten-2" dark color="grey darken-3" grow>
+          <v-tab>Trades</v-tab>
+          <v-tab>Cost Basis</v-tab>
+          <v-tab-item>
+            <v-card>
+              <v-toolbar class="text-h5 elevation-0">
+                <v-toolbar-title class="text-h5">Current Capital Deployed: ${{ getDeployedCapital() }}</v-toolbar-title>
+                <v-spacer></v-spacer>
+                <v-text-field
+                  v-model="tradeSearch"
+                  append-icon="mdi-magnify"
+                  label="Search"
+                  single-line
+                  color="black"
+                  hide-details
+                ></v-text-field>
+              </v-toolbar>
+              <v-data-table
+                :headers="headers"
+                :items="userTrades"
+                :search="tradeSearch"
+                :sort-by="['entryDate']"
+                :sort-desc="['true']"
+                :single-expand="singleExpand"
+                :expanded.sync="expanded"
+                show-expand
+                item-class="table__text"
+              >
+                <template v-slot:[`item.legs`]="{ item }">
+                  <v-chip
+                    label
+                    x-small
+                    v-for="(leg, i) in item.legs"
+                    :key="i"
+                    class="mr-1 pa-1"
+                  >{{ leg.strike }}</v-chip>
+                </template>
 
-          <template v-slot:[`item.profit`]="{ item }">
-            <v-chip
-              label
-              x-small
-              :color="getColor(item.profit)"
-            >{{ item.profit ? formatProfit(item.profit) : ''}}</v-chip>
-          </template>
+                <template v-slot:[`item.profit`]="{ item }">
+                  <v-chip
+                    label
+                    x-small
+                    :color="getColor(item.profit)"
+                  >{{ item.profit ? formatProfit(item.profit) : ''}}</v-chip>
+                </template>
 
-          <!-- <template v-slot:[`item.actions`]="{ item }">
-            <v-btn
-              class="mr-1"
-              v-if="!item.closed"
-              color="green lighten-2"
-              x-small
-              depressed
-              @click="closeTrade(item)"
-            >
-              Close
-            </v-btn>
+                <!-- <template v-slot:[`item.actions`]="{ item }">
+                  <v-btn
+                    class="mr-1"
+                    v-if="!item.closed"
+                    color="green lighten-2"
+                    x-small
+                    depressed
+                    @click="closeTrade(item)"
+                  >
+                    Close
+                  </v-btn>
 
-            <v-btn
-              class="mr-1"
-              color="grey lighten-1"
-              x-small
-              v-if="!item.closed"
-              depressed
-              @click="editTrade(item)"
-            >
-              Edit
-            </v-btn>
+                  <v-btn
+                    class="mr-1"
+                    color="grey lighten-1"
+                    x-small
+                    v-if="!item.closed"
+                    depressed
+                    @click="editTrade(item)"
+                  >
+                    Edit
+                  </v-btn>
 
-            <v-btn
-              x-small
-              depressed
-              color="red lighten-1"
-              @click="deleteTrade(item)"
-            >
-              Delete
-            </v-btn>
-          </template> -->
+                  <v-btn
+                    x-small
+                    depressed
+                    color="red lighten-1"
+                    @click="deleteTrade(item)"
+                  >
+                    Delete
+                  </v-btn>
+                </template> -->
 
-          <template v-slot:[`expanded-item`]="{ headers, item }">
-            <td :colspan="headers.length">
-              <v-container>
-                <v-row>
-                  <v-col cols="3" class="text--disabled pa-1">
-                    <span>{{ item.created }}</span>
-                  </v-col>
-                  <v-col cols="9" class="text-right pa-1">
-                    <v-btn
-                      class="mr-1"
-                      v-if="!item.closed"
-                      color="green lighten-2"
-                      x-small
-                      depressed
-                      @click="closeTrade(item)"
-                    >
-                      Close
-                    </v-btn>
+                <template v-slot:[`expanded-item`]="{ headers, item }">
+                  <td :colspan="headers.length">
+                    <v-container>
+                      <v-row>
+                        <v-col cols="3" class="text--disabled pa-1">
+                          <span>{{ item.created }}</span>
+                        </v-col>
+                        <v-col cols="9" class="text-right pa-1">
+                          <v-btn
+                            class="mr-1"
+                            v-if="!item.closed"
+                            color="green lighten-2"
+                            x-small
+                            depressed
+                            @click="closeTrade(item)"
+                          >
+                            Close
+                          </v-btn>
 
-                    <v-btn
-                      class="mr-1"
-                      color="grey lighten-1"
-                      x-small
-                      v-if="!item.closed"
-                      depressed
-                      @click="editTrade(item)"
-                    >
-                      Edit
-                    </v-btn>
+                          <v-btn
+                            class="mr-1"
+                            color="grey lighten-1"
+                            x-small
+                            v-if="!item.closed"
+                            depressed
+                            @click="editTrade(item)"
+                          >
+                            Edit
+                          </v-btn>
 
-                    <v-btn
-                      x-small
-                      depressed
-                      color="red lighten-1"
-                      @click="deleteTrade(item)"
-                    >
-                      Delete
-                    </v-btn>
-                  </v-col>
-                  <v-col cols="12" class="pa-1">
-                    <h2>{{ item.ticker }}</h2>
-                  </v-col>
-                  <v-col cols="12" class="pa-1">
-                    <h4 class="font-weight-light text-uppercase">{{ item.type }}</h4>
-                  </v-col>
-                  <v-col cols="6" class="pa-1">
-                    <v-chip
-                      label
-                      small
-                      v-for="(leg, i) in item.legs"
-                      :key="i"
-                      class="mr-1 pa-1"
-                    >{{ `${leg.action} ${leg.strike} ${leg.type}` }}</v-chip>
-                  </v-col>
-                  <v-col cols="6" class="pa-1 text-right">
-                        <span v-if="item.closed" class="text--secondary">Profit / Loss:
+                          <v-btn
+                            x-small
+                            depressed
+                            color="red lighten-1"
+                            @click="deleteTrade(item)"
+                          >
+                            Delete
+                          </v-btn>
+                        </v-col>
+                        <v-col cols="12" class="pa-1">
+                          <h2>{{ item.ticker }}</h2>
+                        </v-col>
+                        <v-col cols="12" class="pa-1">
+                          <h4 class="font-weight-light text-uppercase">{{ item.type }}</h4>
+                        </v-col>
+                        <v-col cols="6" class="pa-1">
                           <v-chip
                             label
-                            class="ml-2"
-                            :color="getColor(item.profit)"
-                          >{{ item.profit ? formatProfit(item.profit) : '-'}}</v-chip>
-                        </span>
-                      </v-col>
-                  <v-col cols="12" class="pa-1"><v-divider></v-divider></v-col>
-                  <!-- horizontal divider -->
-                  <v-col cols="6" class="pa-1">
-                    <v-row>
-                      <v-col cols="12" md="6">
-                        <span class="text--secondary">Opened: <strong class="pl-2 text--primary">{{ item.entryDate }}</strong></span>
-                      </v-col>
-                      <v-col cols="12" md="6">
-                        <span class="text--secondary">Expiration Date: <strong class="pl-2 text--primary">{{ `${item.expirationDate} ${displayDte(item.expirationDate, item.closed)}` }}</strong></span>
-                      </v-col>
-                      <v-col cols="12" md="6">
-                        <span class="text--secondary">Price Filled: <strong class="pl-2 text--primary">{{ item.entryPrice }}</strong></span>
-                      </v-col>
-                      <v-col cols="12" md="6">
-                        <span class="text--secondary">Quantity: <strong class="pl-2 text--primary">{{ item.quantity }}</strong></span>
-                      </v-col>
-                      <v-col cols="12" md="6">
-                        <span class="text--secondary">Closed: <strong class="pl-2 text--primary">{{ item.closeDate || '-'}}</strong></span>
-                      </v-col>
-                      <v-col cols="12" md="6">
-                        <span class="text--secondary">Price Closed: <strong class="pl-2 text--primary">{{ item.closePrice || '-'}}</strong></span>
-                      </v-col>
-                    </v-row>
-                  </v-col>
-                  <!-- left half -->
-                  <v-divider class="d-none d-md-block" vertical></v-divider>
-                  <v-col cols="12" md="5" class="pa-1 ml-md-7">
-                    <v-row>
-                      <v-col cols="12" md="6">
-                        <span class="text--secondary">Max Profit: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) || item.type === 'Covered Call' ? '-' : `$${(item.entryPrice * 100) * item.quantity}` }}</strong></span>
-                      </v-col>
-                      <v-col cols="12" md="6">
-                        <span class="text--secondary">Deployed Capital: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) || item.type === 'Covered Call' ? '-' : `$${deployedCapital(item.legs, item.quantity)}` }}</strong></span>
-                      </v-col>
-                      <v-col cols="12" md="6">
-                        <span class="text--secondary">Max RoC: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) || item.type === 'Covered Call' ? '-' : `${calculateRetOnDeployedCap(item.entryPrice, item.quantity, item.legs)}%` }}</strong></span>
-                      </v-col>
-                      <v-col cols="12" md="6">
-                        <span class="text--secondary">Annualized Return: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) || item.type === 'Covered Call' ? '-' : `$${calcAnnualizedReturn(item.entryDate, item.expirationDate, item.entryPrice, item.quantity)}` }}</strong></span>
-                      </v-col>
-                      <v-col cols="12">
-                        <span class="text--secondary">Annualized Return on Deployed Capital: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) || item.type === 'Covered Call' ? '-' : `${(calcAnnualizedReturn(item.entryDate, item.expirationDate, item.entryPrice, item.quantity) / deployedCapital(item.legs, item.quantity) * 100).toFixed(2)}%` }}</strong></span>
-                      </v-col>
-                    </v-row>
-                  </v-col>
-                  <!-- right half -->
-                  <v-col cols="12" class="pa-1"><v-divider></v-divider></v-col>
-                  <v-col cols="12">
-                    <span class="text--secondary">Notes: <strong class="pl-2 text--primary">{{ item.notes }}</strong></span>
-                  </v-col>
-                </v-row>
-              </v-container>
-            </td>
-          </template>
-        </v-data-table>
+                            small
+                            v-for="(leg, i) in item.legs"
+                            :key="i"
+                            class="mr-1 pa-1"
+                          >{{ `${leg.action} ${leg.strike} ${leg.type}` }}</v-chip>
+                        </v-col>
+                        <v-col cols="6" class="pa-1 text-right">
+                              <span v-if="item.closed" class="text--secondary">Profit / Loss:
+                                <v-chip
+                                  label
+                                  class="ml-2"
+                                  :color="getColor(item.profit)"
+                                >{{ item.profit ? formatProfit(item.profit) : '-'}}</v-chip>
+                              </span>
+                            </v-col>
+                        <v-col cols="12" class="pa-1"><v-divider></v-divider></v-col>
+                        <!-- horizontal divider -->
+                        <v-col cols="6" class="pa-1">
+                          <v-row>
+                            <v-col cols="12" md="6">
+                              <span class="text--secondary">Opened: <strong class="pl-2 text--primary">{{ item.entryDate }}</strong></span>
+                            </v-col>
+                            <v-col cols="12" md="6">
+                              <span class="text--secondary">Expiration Date: <strong class="pl-2 text--primary">{{ `${item.expirationDate} ${displayDte(item.expirationDate, item.closed)}` }}</strong></span>
+                            </v-col>
+                            <v-col cols="12" md="6">
+                              <span class="text--secondary">Price Filled: <strong class="pl-2 text--primary">{{ item.entryPrice }}</strong></span>
+                            </v-col>
+                            <v-col cols="12" md="6">
+                              <span class="text--secondary">Quantity: <strong class="pl-2 text--primary">{{ item.quantity }}</strong></span>
+                            </v-col>
+                            <v-col cols="12" md="6">
+                              <span class="text--secondary">Closed: <strong class="pl-2 text--primary">{{ item.closeDate || '-'}}</strong></span>
+                            </v-col>
+                            <v-col cols="12" md="6">
+                              <span class="text--secondary">Price Closed: <strong class="pl-2 text--primary">{{ item.closePrice || '-'}}</strong></span>
+                            </v-col>
+                          </v-row>
+                        </v-col>
+                        <!-- left half -->
+                        <v-divider class="d-none d-md-block" vertical></v-divider>
+                        <v-col cols="12" md="5" class="pa-1 ml-md-7">
+                          <v-row>
+                            <v-col cols="12" md="6">
+                              <span class="text--secondary">Max Profit: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) || item.type === 'Covered Call' ? '-' : `$${(Math.round(item.entryPrice * 100) * item.quantity)}` }}</strong></span>
+                            </v-col>
+                            <v-col cols="12" md="6">
+                              <span class="text--secondary">Deployed Capital: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) || item.type === 'Covered Call' ? '-' : `$${deployedCapital(item.legs, item.quantity)}` }}</strong></span>
+                            </v-col>
+                            <v-col cols="12" md="6">
+                              <span class="text--secondary">Max RoC: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) || item.type === 'Covered Call' ? '-' : `${calculateRetOnDeployedCap(item.entryPrice, item.quantity, item.legs)}%` }}</strong></span>
+                            </v-col>
+                            <v-col cols="12" md="6">
+                              <span class="text--secondary">Annualized Return: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) || item.type === 'Covered Call' ? '-' : `$${calcAnnualizedReturn(item.entryDate, item.expirationDate, item.entryPrice, item.quantity)}` }}</strong></span>
+                            </v-col>
+                            <v-col cols="12">
+                              <span class="text--secondary">Annualized Return on Deployed Capital: <strong class="pl-2 text--primary">{{ longOptions.includes(item.type) || item.type === 'Covered Call' ? '-' : `${(calcAnnualizedReturn(item.entryDate, item.expirationDate, item.entryPrice, item.quantity) / deployedCapital(item.legs, item.quantity) * 100).toFixed(2)}%` }}</strong></span>
+                            </v-col>
+                          </v-row>
+                        </v-col>
+                        <!-- right half -->
+                        <v-col cols="12" class="pa-1"><v-divider></v-divider></v-col>
+                        <v-col cols="12">
+                          <span class="text--secondary">Notes: <strong class="pl-2 text--primary">{{ item.notes }}</strong></span>
+                        </v-col>
+                      </v-row>
+                    </v-container>
+                  </td>
+                </template>
+              </v-data-table>
+            </v-card>
+          </v-tab-item>
+          <v-tab-item>
+            <stock-table></stock-table>
+          </v-tab-item>
+        </v-tabs>
       </v-card>
     </v-col>
     <!-- trades table -->
@@ -446,22 +460,32 @@
     <goals-form
       :showGoalsForm="showGoalsForm"
     ></goals-form>
+    <stock-form
+      :showStockForm="showStockForm"
+    ></stock-form>
   </v-row>
 </template>
 
 <script>
+import moment from 'moment'
 import { mapState, mapGetters } from 'vuex'
 import TradeForm from '@/components/TradeForm'
 import CloseTradeForm from '@/components/CloseTrade'
 import GoalsForm from '@/components/GoalsForm'
-import moment from 'moment'
+import StockForm from '@/components/StockForm'
 import PerformanceCard from '@/components/PerformanceCard'
+import StockTable from '@/components/StockTable'
+import Tooltip from '@/components/Tooltip'
+
 export default {
   components: {
     'trade-form': TradeForm,
     'close-trade-form': CloseTradeForm,
     'goals-form': GoalsForm,
-    'performance-card': PerformanceCard
+    'performance-card': PerformanceCard,
+    'stock-form': StockForm,
+    'stock-table': StockTable,
+    'tool-tip': Tooltip
   },
   data () {
     return {
@@ -524,6 +548,7 @@ export default {
       showTradeForm: false,
       showCloseTradeForm: false,
       showGoalsForm: false,
+      showStockForm: false,
       editedItem: {
         type: '',
         ticker: '',
@@ -553,6 +578,10 @@ export default {
     })
     vm.$on('close-goal-form', () => {
       this.showGoalsForm = false
+    })
+
+    vm.$on('close-stock-form', () => {
+      this.showStockForm = false
     })
   },
   computed: {
@@ -618,6 +647,25 @@ export default {
       })
       return this.calcTotal(sum, quantity)
     },
+    getDeployedCapital () {
+      let sum = 0
+      this.userTrades.forEach(trade => {
+        if (!trade.closed) {
+          if (!trade.type.includes('Long') && !trade.type.includes('Covered Call')) {
+            const q = trade.quantity
+            let s = 0
+            for (const leg of trade.legs) {
+              s += parseFloat(leg.strike)
+            }
+            sum += this.calcTotal(s, q)
+          } else if (trade.type.includes('Long')) {
+            sum += this.calcTotal(trade.entryPrice, trade.quantity)
+          }
+        }
+      })
+
+      return sum
+    },
     calculateRetOnDeployedCap (price, quantity, legs) {
       const mP = this.calcTotal(price, quantity)
       const dC = this.deployedCapital(legs, quantity)
@@ -641,5 +689,4 @@ export default {
 </script>
 
 <style scoped>
-
 </style>

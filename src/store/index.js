@@ -69,7 +69,8 @@ const store = new Vuex.Store({
           name: form.name,
           email: form.email,
           monthlyGoal: 0,
-          annualGoal: 0
+          annualGoal: 0,
+          stocks: []
         }).catch(e => e)
 
         // fetch user profile and set in state
@@ -134,7 +135,13 @@ const store = new Vuex.Store({
     },
     async closeTrade ({ state, commit }, trade) {
       const t = state.trades[trade.index]
-      const profit = t.type.includes('Long') ? Math.round(t.quantity * (trade.closePrice - t.entryPrice) * 100) - trade.commissions : Math.round(t.quantity * (t.entryPrice - trade.closePrice) * 100) - trade.commissions
+      let profit = t.type.includes('Long') ? Math.round(t.quantity * (trade.closePrice - t.entryPrice) * 100) - trade.commissions : Math.round(t.quantity * (t.entryPrice - trade.closePrice) * 100) - trade.commissions
+
+      if (t.type === 'Covered Call' && trade.costBasis) {
+        const prof = ((t.legs[0].strike - trade.costBasis) * 100) * t.quantity
+        profit += prof
+      }
+
       await fb.tradesCollection.doc(t.id).update({
         closeDate: trade.closeDate,
         closePrice: trade.closePrice,
@@ -180,6 +187,14 @@ const store = new Vuex.Store({
       await fb.usersCollection.doc(user.uid).update({
         annualGoal: goals.annual,
         monthlyGoal: goals.monthly
+      })
+      commit('finishedLoading')
+      dispatch('fetchUserProfile', user)
+    },
+    async addStock ({ dispatch, commit }, stocks) {
+      const user = fb.auth.currentUser
+      await fb.usersCollection.doc(user.uid).update({
+        userStocks: stocks
       })
       commit('finishedLoading')
       dispatch('fetchUserProfile', user)

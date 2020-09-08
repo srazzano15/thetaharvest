@@ -23,10 +23,29 @@
       </v-container>
     </v-main>
     <v-footer
+      color="grey"
+      padless
     >
-      <v-col cols="12" class="text-center font-weight-medium">
-        v0.3.2 - Theta Harvest {{ new Date().getFullYear() }}
-      </v-col>
+      <v-row
+        justify="center"
+        no-gutters
+      >
+        <v-btn
+          text
+          :href="'https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=FCQEC7QZTZN78&currency_code=USD&source=url'"
+          target="_blank"
+          class="my-1"
+        >Donate</v-btn>
+        <v-btn
+          text
+          :href="'mailto:admin@thetaharvest.com'"
+          target="_blank"
+          class="my-1"
+        >Contact</v-btn>
+        <v-col cols="12" class="py-2 grey lighten-1 text-center">
+          v0.4.0 - <strong>Theta Harvest {{ new Date().getFullYear() }}</strong>
+        </v-col>
+      </v-row>
     </v-footer>
   </v-app>
 </template>

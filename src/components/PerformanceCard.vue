@@ -54,7 +54,7 @@
               Loading...
             </div>
             <div v-else class="grey--text text--darken-3 text-h5 text-md-h4 pt-4">
-              {{ `$${calcMaxProfit}` }}
+              {{ `$${calcMaxProfit.toFixed(2)}` }}
             </div>
           </v-card>
         </v-col>
@@ -69,7 +69,7 @@
           </v-card>
         </v-col>
         <v-col cols="6" md="3">
-          <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-body-2 text-md-h6">Capital Deployed
+          <v-card color="blue-grey lighten-4" class="grey--text text--darken-1 text-center px-2 py-6 text-body-2 text-md-h6">Total Cap Deployed
             <div v-if="loading" class="grey--text text--darken-3 text-button text-md-h4 font-weight-thin pt-4">
               Loading...
             </div>
@@ -199,7 +199,11 @@ export default {
       if (this.userTrades && this.userTrades.length) {
         const today = moment(new Date())
         t = this.userTrades.filter(trade => {
-          return moment(trade.entryDate).isSame(today, time)
+          if (trade.closed) {
+            return moment(trade.closeDate).isSame(today, time)
+          } else {
+            return moment(trade.entryDate).isSame(today, time)
+          }
         })
       }
       return t
@@ -270,8 +274,10 @@ export default {
       let sum = 0
       const t = time ? this.filterUserTrades(time) : this.userTrades
       t.forEach(trade => {
-        if (!trade.type.includes('Long')) {
+        if (!trade.type.includes('Long') && !trade.profit) {
           sum += this.calcTotal(trade.entryPrice, trade.quantity)
+        } else if (!trade.type.includes('Long') && trade.profit) {
+          sum += trade.profit
         }
       })
 

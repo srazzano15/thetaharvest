@@ -24,6 +24,32 @@
         </v-list-item-content>
       </v-list-item>
 
+      <v-list-item
+        :href="'mailto:admin@thetaharvest.com'"
+        target="_blank"
+      >
+        <v-list-item-icon>
+          <v-icon>mdi-email</v-icon>
+        </v-list-item-icon>
+
+        <v-list-item-content>
+          <v-list-item-title>Contact</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
+      <v-list-item
+        :href="'https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=FCQEC7QZTZN78&currency_code=USD&source=url'"
+        target="_blank"
+      >
+        <v-list-item-icon>
+          <v-icon>mdi-gift-outline</v-icon>
+        </v-list-item-icon>
+
+        <v-list-item-content>
+          <v-list-item-title>Donate</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
       <v-list-item @click="logout">
         <v-list-item-icon>
           <v-icon>mdi-power-off</v-icon>

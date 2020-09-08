@@ -70,7 +70,7 @@ const store = new Vuex.Store({
           email: form.email,
           monthlyGoal: 0,
           annualGoal: 0,
-          stocks: []
+          userStocks: []
         }).catch(e => e)
 
         // fetch user profile and set in state

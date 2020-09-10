@@ -37,7 +37,7 @@
                 <v-text-field color="green" label="Price Closed *" v-model.number="closePrice" :readonly="assigned || exercised" required></v-text-field>
               </v-col>
               <v-col cols="4">
-                <v-text-field color="green" label="Total Commissions Paid" v-model.number="commissions"></v-text-field>
+                <v-text-field color="green" label="Commissions Paid" v-model.number="commissions" hint="Amount per contract" persistent-hint></v-text-field>
               </v-col>
               <v-col v-if="trades[index] && trades[index].type === 'Cash Secured Put'" cols="4">
                 <v-switch @change="$emit('assigned')" color="green" label="Assigned?" v-model="assigned"></v-switch>
@@ -71,7 +71,7 @@ export default {
       closePrice: '',
       cal: false,
       closeDate: moment(new Date()).format('YYYY-MM-DD'),
-      commissions: '',
+      commissions: 0,
       assigned: false,
       exercised: false,
       costBasis: null
@@ -103,10 +103,11 @@ export default {
         this.ccExercised()
         this.costBasis = this.getCostBasis()
       }
+      const c = (this.trades[this.index].legs.length * this.trades[this.index].quantity * 2) * this.commissions
       this.$store.dispatch('closeTrade', {
         closePrice: this.closePrice,
         closeDate: this.closeDate,
-        commissions: this.commissions,
+        commissions: c,
         index: this.index,
         costBasis: this.costBasis
       })

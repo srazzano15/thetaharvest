@@ -70,7 +70,7 @@ export default {
     return {
       items: [
         { title: 'Dashboard', icon: 'mdi-view-dashboard', link: 'dashboard' },
-        { title: 'Reports', icon: 'mdi-chart-bar', link: 'reports' },
+        /* { title: 'Reports', icon: 'mdi-chart-bar', link: 'reports' }, */
         { title: 'Settings', icon: 'mdi-cog', link: 'settings' }
       ],
       right: null

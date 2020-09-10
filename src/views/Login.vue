@@ -8,7 +8,7 @@
           <v-spacer></v-spacer>
         </v-toolbar>
         <v-card-text>
-          <v-form v-model="valid" @submit.prevent>
+          <v-form v-model="valid" autocomplete="on" @submit.prevent>
             <v-text-field
               label="Email"
               name="email"
@@ -18,6 +18,7 @@
               color="green darken-1"
               :rules="[rules.required, rules.hasAtSymbol, rules.emailSecurity]"
               validate-on-blur
+              autocomplete
             ></v-text-field>
 
             <v-text-field
@@ -30,6 +31,7 @@
               color="green darken-1"
               :rules="[rules.required, rules.min, rules.passwordSecurity]"
               validate-on-blur
+              autocomplete
             ></v-text-field>
             <v-alert v-if="error" dense outlined type="error">{{ error }}</v-alert>
           </v-form>

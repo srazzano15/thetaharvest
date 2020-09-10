@@ -64,7 +64,7 @@
               Loading...
             </div>
             <div v-else class="grey--text text--darken-3 text-h5 text-md-h4 pt-4">
-              {{ `${((calcProfit / calcDeployedCap) * 100).toFixed(2)}%` }}
+              {{ `${calcProfit ? ((calcProfit / calcDeployedCap) * 100).toFixed(2) : 0}%` }}
             </div>
           </v-card>
         </v-col>
@@ -195,7 +195,7 @@ export default {
   },
   methods: {
     filterUserTrades (time) {
-      let t
+      let t = []
       if (this.userTrades && this.userTrades.length) {
         const today = moment(new Date())
         t = this.userTrades.filter(trade => {
@@ -210,7 +210,7 @@ export default {
     },
     getProfitFromTimeFrame (time) {
       let p = 0
-      const t = this.filterUserTrades(time)
+      const t = time ? this.filterUserTrades(time) : this.userTrades
       t.forEach(trade => {
         if (trade.profit) {
           p += trade.profit
@@ -294,8 +294,11 @@ export default {
           sum += d
         }
       })
-
-      return (sum / t.length).toFixed(1)
+      if (t.length) {
+        return (sum / t.length).toFixed(1)
+      } else {
+        return 0
+      }
     },
     calcTotal (value, quantity) {
       return (value * 100) * quantity

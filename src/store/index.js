@@ -55,6 +55,15 @@ const store = new Vuex.Store({
         // change route to dashboard
         router.push({ name: 'dashboard' })
       }
+      fb.tradesCollection.orderBy('created', 'desc').onSnapshot(snapshot => {
+        const t = []
+        snapshot.forEach(doc => {
+          const trade = doc.data()
+          trade.id = doc.id
+          t.push(trade)
+        })
+        store.commit('setTrades', t)
+      })
       commit('finishedLoading')
     },
     async register ({ dispatch, commit }, form) {
@@ -83,7 +92,8 @@ const store = new Vuex.Store({
       // clear userProfile and redirect to /login
       commit('setUserProfile', {})
       commit('setTrades', [])
-      router.push('/')
+      // router.push('/')
+      window.location.href = '/'
     },
     async createTrade ({ state, commit }, trade) {
       await fb.tradesCollection.add({

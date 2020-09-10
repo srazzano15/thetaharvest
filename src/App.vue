@@ -31,19 +31,21 @@
         no-gutters
       >
         <v-btn
+          v-if="showNav"
           text
           :href="'https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=FCQEC7QZTZN78&currency_code=USD&source=url'"
           target="_blank"
           class="my-1"
         >Donate</v-btn>
         <v-btn
+          v-if="showNav"
           text
           :href="'mailto:admin@thetaharvest.com'"
           target="_blank"
           class="my-1"
         >Contact</v-btn>
         <v-col cols="12" class="py-2 grey lighten-1 text-center">
-          v0.4.1 - <strong>Theta Harvest {{ new Date().getFullYear() }}</strong>
+          v0.4.2 - <strong>Theta Harvest {{ new Date().getFullYear() }}</strong>
         </v-col>
       </v-row>
     </v-footer>

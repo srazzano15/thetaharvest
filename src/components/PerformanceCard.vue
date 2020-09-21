@@ -22,7 +22,7 @@
               Loading...
             </div>
             <div v-else class="text-h5 text-md-h4 text-lg-h4 pt-4" :class="{ 'green--text': calcProfit > 0, 'red--text': calcProfit < 0 }">
-              {{ 0 > calcProfit ? `- $${calcProfit.toFixed(2)}` :  `+ $${calcProfit.toFixed(2)}`}}
+              {{ 0 > calcProfit ? `- $${(calcProfit * -1).toFixed(2)}` :  `+ $${calcProfit.toFixed(2)}`}}
             </div>
           </v-card>
         </v-col>
@@ -64,7 +64,7 @@
               Loading...
             </div>
             <div v-else class="grey--text text--darken-3 text-h5 text-md-h4 pt-4">
-              {{ `${calcProfit ? ((calcProfit / calcDeployedCap) * 100).toFixed(2) : 0}%` }}
+              {{ `${calcProfit ? ((calcProfit / (calcDeployedCap || 100)) * 100).toFixed(2) : 0}%` }}
             </div>
           </v-card>
         </v-col>
@@ -111,13 +111,13 @@ export default {
   props: ['timeFrame'],
   computed: {
     ...mapState(['userProfile', 'loading']),
-    ...mapGetters(['userTrades', 'profit', 'winTotal', 'lossTotal', 'monthlyTotal', 'annualTotal', 'ratioPercentage', 'annualPercent', 'monthlyPercent']),
+    ...mapGetters(['userTrades', 'userStocks', 'profit', 'winTotal', 'lossTotal', 'monthlyTotal', 'annualTotal', 'ratioPercentage', 'annualPercent', 'monthlyPercent']),
     calcProfit () {
       switch (this.timeFrame) {
         case 'month':
-          return this.getProfitFromTimeFrame('month')
+          return this.getProfitFromTimeFrame('month') + this.getStockProfitFromTimeframe('month')
         case 'year':
-          return this.getProfitFromTimeFrame('year')
+          return this.getProfitFromTimeFrame('year') + this.getStockProfitFromTimeframe('year')
         default:
           return this.profit
       }
@@ -194,6 +194,13 @@ export default {
     }
   },
   methods: {
+    formatProfit (val) {
+      if (!val) {
+        return ''
+      } else {
+        return val > 0 ? `$${val.toFixed(2)}` : `-$${val.toFixed(2) * -1}`
+      }
+    },
     filterUserTrades (time) {
       let t = []
       if (this.userTrades && this.userTrades.length) {
@@ -212,6 +219,26 @@ export default {
       let p = 0
       const t = time ? this.filterUserTrades(time) : this.userTrades
       t.forEach(trade => {
+        if (trade.profit) {
+          p += trade.profit
+        }
+      })
+      return p
+    },
+    getStockProfitFromTimeframe (time) {
+      let s = []
+      let p = 0
+      if (this.userStocks && this.userStocks.length) {
+        const today = moment(new Date())
+        s = this.userStocks.filter(trade => {
+          if (trade.closed) {
+            return moment(trade.closeDate).isSame(today, time)
+          } else {
+            return moment(trade.created).isSame(today, time)
+          }
+        })
+      }
+      s.forEach(trade => {
         if (trade.profit) {
           p += trade.profit
         }
@@ -253,16 +280,27 @@ export default {
     getDeployedCapital (time) {
       let sum = 0
       const t = time ? this.filterUserTrades(time) : this.userTrades
+      const uniqueTypes = [
+        'Put Debit Spread',
+        'Call Debit Spread',
+        'Covered Call',
+        'Long Straddle',
+        'Long Strangle',
+        'Long Naked Call',
+        'Long Naked Put'
+      ]
       t.forEach(trade => {
-        if (!trade.type.includes('Long') && !trade.type.includes('Covered Call')) {
-          const q = trade.quantity
+        const q = trade.quantity
+        if (!uniqueTypes.includes(trade.type)) {
           let s = 0
           for (const leg of trade.legs) {
-            s += parseFloat(leg.strike)
+            if (leg.action === 'Sell') {
+              s += parseFloat(leg.strike)
+            }
           }
           sum += this.calcTotal(s, q)
-        } else if (trade.type.includes('Long')) {
-          sum += this.calcTotal(trade.entryPrice, trade.quantity)
+        } else if (trade.type.includes('Long') || trade.type.includes('Debit')) {
+          sum += this.calcTotal(trade.entryPrice, q)
         }
       })
 

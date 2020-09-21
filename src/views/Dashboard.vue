@@ -270,6 +270,10 @@
                 show-expand
                 item-class="table__text"
               >
+                <template v-slot:[`item.entryDate`]="{ item }">
+                  {{ formatTime(item.entryDate) }}
+                </template>
+
                 <template v-slot:[`item.legs`]="{ item }">
                   <v-chip
                     label
@@ -278,6 +282,10 @@
                     :key="i"
                     class="mr-1 pa-1"
                   >{{ leg.strike }}</v-chip>
+                </template>
+
+                <template v-slot:[`item.closeDate`]="{ item }">
+                  {{ item.closed ? formatTime(item.closeDate) : '' }}
                 </template>
 
                 <template v-slot:[`item.profit`]="{ item }">
@@ -326,7 +334,7 @@
                     <v-container>
                       <v-row>
                         <v-col cols="3" class="text--disabled pa-1">
-                          <span>{{ item.created }}</span>
+                          <span>{{ formatTime(item.created) }}</span>
                         </v-col>
                         <v-col cols="9" class="text-right pa-1">
                           <v-btn
@@ -389,7 +397,7 @@
                         <v-col cols="6" class="pa-1">
                           <v-row>
                             <v-col cols="12" md="6">
-                              <span class="text--secondary">Opened: <strong class="pl-2 text--primary">{{ item.entryDate }}</strong></span>
+                              <span class="text--secondary">Opened: <strong class="pl-2 text--primary">{{ formatTime(item.entryDate) }}</strong></span>
                             </v-col>
                             <v-col cols="12" md="6">
                               <span class="text--secondary">Expiration Date: <strong class="pl-2 text--primary">{{ `${item.expirationDate} ${displayDte(item.expirationDate, item.closed)}` }}</strong></span>
@@ -401,10 +409,10 @@
                               <span class="text--secondary">Quantity: <strong class="pl-2 text--primary">{{ item.quantity }}</strong></span>
                             </v-col>
                             <v-col cols="12" md="6">
-                              <span class="text--secondary">Closed: <strong class="pl-2 text--primary">{{ item.closeDate || '-'}}</strong></span>
+                              <span class="text--secondary">Closed: <strong class="pl-2 text--primary">{{ formatTime(item.closeDate) || '-'}}</strong></span>
                             </v-col>
                             <v-col cols="12" md="6">
-                              <span class="text--secondary">Price Closed: <strong class="pl-2 text--primary">{{ item.closePrice || '-'}}</strong></span>
+                              <span class="text--secondary">Price Closed: <strong class="pl-2 text--primary">{{ item.closePrice >= 0 ? item.closePrice : '-'}}</strong></span>
                             </v-col>
                           </v-row>
                         </v-col>
@@ -442,7 +450,7 @@
             </v-card>
           </v-tab-item>
           <v-tab-item>
-            <stock-table></stock-table>
+            <stock-table :trades="trades"></stock-table>
           </v-tab-item>
         </v-tabs>
       </v-card>
@@ -462,7 +470,12 @@
     ></goals-form>
     <stock-form
       :showStockForm="showStockForm"
+      :index="editedIndex"
     ></stock-form>
+    <sell-stock-form
+      :showSellStockForm="showSellStockForm"
+      :index="editedIndex"
+    ></sell-stock-form>
   </v-row>
 </template>
 
@@ -475,6 +488,7 @@ import GoalsForm from '@/components/GoalsForm'
 import StockForm from '@/components/StockForm'
 import PerformanceCard from '@/components/PerformanceCard'
 import StockTable from '@/components/StockTable'
+import SellStockForm from '@/components/SellStockForm'
 import Tooltip from '@/components/Tooltip'
 
 export default {
@@ -485,7 +499,8 @@ export default {
     'performance-card': PerformanceCard,
     'stock-form': StockForm,
     'stock-table': StockTable,
-    'tool-tip': Tooltip
+    'tool-tip': Tooltip,
+    'sell-stock-form': SellStockForm
   },
   data () {
     return {
@@ -549,6 +564,7 @@ export default {
       showCloseTradeForm: false,
       showGoalsForm: false,
       showStockForm: false,
+      showSellStockForm: false,
       editedItem: {
         type: '',
         ticker: '',
@@ -564,13 +580,18 @@ export default {
         'Long Strangle',
         'Long Naked Call',
         'Long Naked Put'
-      ]
+      ],
+      editedStock: {
+        id: '',
+        ticker: ''
+      }
     }
   },
   mounted () {
     const vm = this
     vm.$on('close-trade-form', () => {
       this.showTradeForm = false
+      this.editedIndex = -1
     })
     vm.$on('close-form', () => {
       this.showCloseTradeForm = false
@@ -582,6 +603,17 @@ export default {
 
     vm.$on('close-stock-form', () => {
       this.showStockForm = false
+      this.editedIndex = -1
+    })
+    vm.$on('close-sell-stock-form', () => {
+      this.showSellStockForm = false
+      this.editedIndex = -1
+    })
+    vm.$root.$on('add-stock', item => {
+      this.buyStock(item)
+    })
+    vm.$root.$on('sell-stock', item => {
+      this.sellStock(item)
     })
   },
   computed: {
@@ -589,6 +621,9 @@ export default {
     ...mapGetters(['monthlyTotal', 'annualTotal', 'monthlyPercent', 'annualPercent', 'userTrades', 'profit', 'winTotal', 'lossTotal', 'ratioPercentage'])
   },
   methods: {
+    formatTime (t) {
+      return moment(t).format('YYYY-MM-DD')
+    },
     getColor (n) {
       if (!n) {
         return 'transparent'
@@ -602,11 +637,21 @@ export default {
       this.editedIndex = this.trades.indexOf(item)
       this.showCloseTradeForm = true
     },
+    sellStock (item) {
+      this.editedIndex = this.trades.indexOf(item)
+      this.showSellStockForm = true
+    },
     async editTrade (item) {
       this.editedIndex = this.trades.indexOf(item)
       this.editedItem = await Object.assign({}, item)
       this.$root.$emit('edit-trade')
       this.showTradeForm = true
+    },
+    async buyStock (item) {
+      this.editedIndex = this.trades.indexOf(item)
+      this.editedStock = await Object.assign({}, item)
+      this.$root.$emit('buy-stock')
+      this.showStockForm = true
     },
     deleteTrade (item) {
       const c = confirm('Are you sure you want to delete this trade? This cannot be undone.')
@@ -620,7 +665,7 @@ export default {
       if (!val) {
         return ''
       } else {
-        return val > 0 ? `$${val.toFixed(2)}` : `-$${val.toFixed(2) * -1}`
+        return val > 0 ? `$${val.toFixed(2)}` : `-$${(val * -1).toFixed(2)}`
       }
     },
     calcTotal (value, quantity) {
@@ -649,18 +694,27 @@ export default {
     },
     getDeployedCapital () {
       let sum = 0
+      const uniqueTypes = [
+        'Put Debit Spread',
+        'Call Debit Spread',
+        'Covered Call',
+        'Long Straddle',
+        'Long Strangle',
+        'Long Naked Call',
+        'Long Naked Put'
+      ]
       this.userTrades.forEach(trade => {
-        if (!trade.closed) {
-          if (!trade.type.includes('Long') && !trade.type.includes('Covered Call')) {
-            const q = trade.quantity
-            let s = 0
-            for (const leg of trade.legs) {
+        const q = trade.quantity
+        if (!uniqueTypes.includes(trade.type)) {
+          let s = 0
+          for (const leg of trade.legs) {
+            if (leg.action === 'Sell') {
               s += parseFloat(leg.strike)
             }
-            sum += this.calcTotal(s, q)
-          } else if (trade.type.includes('Long')) {
-            sum += this.calcTotal(trade.entryPrice, trade.quantity)
           }
+          sum += this.calcTotal(s, q)
+        } else if (trade.type.includes('Long') || trade.type.includes('Debit')) {
+          sum += this.calcTotal(trade.entryPrice, q)
         }
       })
 

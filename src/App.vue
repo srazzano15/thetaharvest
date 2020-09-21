@@ -45,7 +45,7 @@
           class="my-1"
         >Contact</v-btn>
         <v-col cols="12" class="py-2 grey lighten-1 text-center">
-          v0.4.2 - <strong>Theta Harvest {{ new Date().getFullYear() }}</strong>
+          v0.5.0 - <strong>Theta Harvest {{ new Date().getFullYear() }}</strong>
         </v-col>
       </v-row>
     </v-footer>

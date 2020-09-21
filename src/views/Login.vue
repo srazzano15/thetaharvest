@@ -32,6 +32,7 @@
               :rules="[rules.required, rules.min, rules.passwordSecurity]"
               validate-on-blur
               autocomplete
+              @keydown.enter="login"
             ></v-text-field>
             <v-alert v-if="error" dense outlined type="error">{{ error }}</v-alert>
           </v-form>

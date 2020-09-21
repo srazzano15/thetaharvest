@@ -52,6 +52,7 @@
               color="green darken-1"
               :rules="[rules.required, rules.min, rules.passwordSecurity, rules.match]"
               validate-on-blur
+              @keydown.enter="register"
             ></v-text-field>
           </v-form>
           <v-alert v-if="error" dense outlined type="error">{{ error }}</v-alert>
